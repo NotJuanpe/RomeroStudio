@@ -34,9 +34,6 @@ export const Header: React.FC<HeaderProps> = ({
     { id: 'proyectos', label: 'Obras y Proyectos' },
     { id: 'antes-despues', label: 'Antes y Después' },
     { id: 'servicios', label: 'Servicios' },
-    { id: 'panel', label: 'Panel', badge: unreadCount > 0 ? unreadCount : undefined },
-    { id: 'marca', label: 'Marca' },
-    { id: 'ui-kit', label: 'UI Kit' },
   ];
 
   const handleNavClick = (view: ScreenView) => {

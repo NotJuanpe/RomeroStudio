@@ -46,6 +46,26 @@ export interface ContactMessage {
   status: 'Pendiente' | 'Respondido';
 }
 
+export interface SiteSettings {
+  studioName: string;
+  tagline: string;
+  email: string;
+  phone: string;
+  address: string;
+  heroTitle: string;
+  heroSubtitle: string;
+  whatsappNumber: string;
+}
+
+export interface SiteStats {
+  activeProjects: number;
+  totalProjects: number;
+  totalMessages: number;
+  unreadMessages: number;
+  visits: number;
+  lastUpdated: string;
+}
+
 export type ScreenView =
   | 'inicio'
   | 'proyectos'

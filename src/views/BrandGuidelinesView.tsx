@@ -1,8 +1,13 @@
 import React from 'react';
 import { Logo } from '../components/Logo';
-import { Sparkles, Check, X, Copy, CheckCheck } from 'lucide-react';
+import { ScreenView } from '../types';
+import { Sparkles, Check, X, Copy, CheckCheck, ArrowLeft, LayoutDashboard, Home } from 'lucide-react';
 
-export const BrandGuidelinesView: React.FC = () => {
+interface BrandGuidelinesViewProps {
+  onNavigate?: (view: ScreenView) => void;
+}
+
+export const BrandGuidelinesView: React.FC<BrandGuidelinesViewProps> = ({ onNavigate }) => {
   const [copiedColor, setCopiedColor] = React.useState<string | null>(null);
 
   const copyToClipboard = (hex: string) => {
@@ -25,6 +30,26 @@ export const BrandGuidelinesView: React.FC = () => {
   return (
     <div className="w-full bg-[#f9f9f9] pt-24 pb-20">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Back navigation buttons for internal views */}
+        {onNavigate && (
+          <div className="mb-8 flex flex-wrap items-center gap-3">
+            <button
+              onClick={() => onNavigate('panel')}
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-[#e5e5e5] text-xs font-bold text-[#111111] hover:bg-neutral-100 transition-all cursor-pointer shadow-xs"
+            >
+              <LayoutDashboard className="w-3.5 h-3.5" />
+              <span>← Volver al Panel de Gestión</span>
+            </button>
+            <button
+              onClick={() => onNavigate('inicio')}
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-transparent text-xs font-semibold text-[#5e5e5e] hover:text-[#111111] transition-all cursor-pointer"
+            >
+              <Home className="w-3.5 h-3.5" />
+              <span>Ir a Web Pública</span>
+            </button>
+          </div>
+        )}
+
         {/* Header */}
         <div className="max-w-3xl mb-12">
           <span className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#5e5e5e] block mb-2">
@@ -91,7 +116,7 @@ export const BrandGuidelinesView: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Dark variant */}
               <div className="p-8 bg-[#f9f9f9] rounded-2xl border border-[#e5e5e5] flex flex-col items-center justify-center text-center space-y-4">
-                <Logo variant="dark" />
+                <Logo variant="dark" size="lg" />
                 <span className="text-xs font-semibold text-[#5e5e5e]">
                   Versión Positiva (Uso general en fondos claros)
                 </span>
@@ -99,7 +124,7 @@ export const BrandGuidelinesView: React.FC = () => {
 
               {/* Light variant */}
               <div className="p-8 bg-[#111111] rounded-2xl border border-black flex flex-col items-center justify-center text-center space-y-4">
-                <Logo variant="hero" />
+                <Logo variant="hero" size="lg" />
                 <span className="text-xs font-semibold text-white/70">
                   Versión Negativa (Sobre fondos fotográficos u oscuros)
                 </span>

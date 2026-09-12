@@ -21,7 +21,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onEnter }) => {
       {/* Centered Identity */}
       <div className="flex flex-col items-center text-center max-w-lg space-y-6">
         <div className="p-4 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-md">
-          <Logo variant="hero" />
+          <Logo variant="hero" size="lg" />
         </div>
 
         <div>

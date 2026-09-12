@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ScreenView } from '../types';
 import {
   ArrowUpRight,
   ArrowRight,
@@ -11,9 +12,15 @@ import {
   Layers,
   Copy,
   CheckCheck,
+  LayoutDashboard,
+  Home,
 } from 'lucide-react';
 
-export const UIKitView: React.FC = () => {
+interface UIKitViewProps {
+  onNavigate?: (view: ScreenView) => void;
+}
+
+export const UIKitView: React.FC<UIKitViewProps> = ({ onNavigate }) => {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const triggerToast = (msg: string) => {
@@ -24,6 +31,26 @@ export const UIKitView: React.FC = () => {
   return (
     <div className="w-full bg-[#f9f9f9] pt-24 pb-20">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Back navigation buttons for internal views */}
+        {onNavigate && (
+          <div className="mb-8 flex flex-wrap items-center gap-3">
+            <button
+              onClick={() => onNavigate('panel')}
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-[#e5e5e5] text-xs font-bold text-[#111111] hover:bg-neutral-100 transition-all cursor-pointer shadow-xs"
+            >
+              <LayoutDashboard className="w-3.5 h-3.5" />
+              <span>← Volver al Panel de Gestión</span>
+            </button>
+            <button
+              onClick={() => onNavigate('inicio')}
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-transparent text-xs font-semibold text-[#5e5e5e] hover:text-[#111111] transition-all cursor-pointer"
+            >
+              <Home className="w-3.5 h-3.5" />
+              <span>Ir a Web Pública</span>
+            </button>
+          </div>
+        )}
+
         {/* Toast Notification Container */}
         {toastMessage && (
           <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 bg-[#111111] text-white px-5 py-3 rounded-full text-xs font-bold shadow-2xl flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2">

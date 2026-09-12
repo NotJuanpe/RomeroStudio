@@ -1,7 +1,7 @@
 import React from 'react';
 import { ScreenView } from '../types';
 import { Logo } from './Logo';
-import { ArrowUpRight, Mail, Phone, MapPin, Instagram, Linkedin } from 'lucide-react';
+import { ArrowUpRight, Mail, Phone, MapPin, Instagram, Linkedin, Lock } from 'lucide-react';
 
 interface FooterProps {
   onNavigate: (view: ScreenView) => void;
@@ -112,38 +112,42 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenContact }) => 
             </ul>
           </div>
 
-          {/* Design System & Docs */}
+          {/* Architectural Specialties */}
           <div>
             <h4 className="text-xs font-bold uppercase tracking-widest text-neutral-400 mb-4">
-              Identidad & Sistema
+              Especialidades
             </h4>
             <ul className="space-y-2.5 text-xs text-neutral-300">
               <li>
                 <button
-                  onClick={() => onNavigate('marca')}
-                  className="hover:text-white transition-colors cursor-pointer"
+                  onClick={() => onNavigate('proyectos')}
+                  className="hover:text-white transition-colors cursor-pointer text-left"
                 >
-                  Manual de Marca
+                  Obras Nuevas Residenciales
                 </button>
               </li>
               <li>
                 <button
-                  onClick={() => onNavigate('ui-kit')}
-                  className="hover:text-white transition-colors cursor-pointer"
+                  onClick={() => onNavigate('proyectos')}
+                  className="hover:text-white transition-colors cursor-pointer text-left"
                 >
-                  UI Kit & Componentes
+                  Reformas Integrales de Alta Gama
                 </button>
               </li>
               <li>
                 <button
-                  onClick={() => {
-                    const el = document.getElementById('proceso-section');
-                    if (el) el.scrollIntoView({ behavior: 'smooth' });
-                    else onNavigate('inicio');
-                  }}
-                  className="hover:text-white transition-colors cursor-pointer"
+                  onClick={() => onNavigate('antes-despues')}
+                  className="hover:text-white transition-colors cursor-pointer text-left"
                 >
-                  Metodología de Trabajo
+                  Comparativas Antes y Después
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => onNavigate('servicios')}
+                  className="hover:text-white transition-colors cursor-pointer text-left"
+                >
+                  Dirección Técnica & Project Management
                 </button>
               </li>
             </ul>
@@ -174,10 +178,20 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenContact }) => 
         {/* Bottom bar */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-neutral-500">
           <p>© {new Date().getFullYear()} Romero Estudio. Arquitectura Integral. Todos los derechos reservados.</p>
-          <div className="flex items-center gap-6">
-            <span className="hover:text-neutral-300 transition-colors cursor-pointer">Privacidad</span>
-            <span className="hover:text-neutral-300 transition-colors cursor-pointer">Términos</span>
-            <span className="hover:text-neutral-300 transition-colors cursor-pointer">Cookies</span>
+          <div className="flex items-center gap-5">
+            <span className="hover:text-neutral-300 transition-colors">Privacidad</span>
+            <span className="hover:text-neutral-300 transition-colors">Términos</span>
+            <span className="text-neutral-700">|</span>
+            {/* Subtle Studio Management Access */}
+            <button
+              id="footer-admin-access-btn"
+              onClick={() => onNavigate('panel')}
+              className="hover:text-neutral-300 transition-colors cursor-pointer flex items-center gap-1.5 text-neutral-500 hover:text-white"
+              title="Acceso al Panel de Gestión"
+            >
+              <Lock className="w-3 h-3" />
+              <span>Acceso Gestión</span>
+            </button>
           </div>
         </div>
       </div>

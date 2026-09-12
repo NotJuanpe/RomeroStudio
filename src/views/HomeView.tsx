@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Project, ServiceItem, ContactMessage, ScreenView } from '../types';
+import { Project, ServiceItem, ContactMessage, ScreenView, SiteSettings } from '../types';
 import { BeforeAfterSlider } from '../components/BeforeAfterSlider';
 import {
   ArrowRight,
@@ -19,6 +19,7 @@ import {
 interface HomeViewProps {
   projects: Project[];
   services: ServiceItem[];
+  settings?: SiteSettings;
   onSelectProject: (project: Project) => void;
   onNavigate: (view: ScreenView) => void;
   onOpenContact: () => void;
@@ -28,6 +29,7 @@ interface HomeViewProps {
 export const HomeView: React.FC<HomeViewProps> = ({
   projects,
   services,
+  settings,
   onSelectProject,
   onNavigate,
   onOpenContact,
@@ -82,19 +84,13 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
         {/* Hero Content */}
         <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white/90 mb-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-            <span className="text-[11px] font-bold uppercase tracking-[0.16em]">
-              Estudio de Arquitectura Técnica & Obras de Alta Gama
-            </span>
-          </div>
-
           <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight leading-[1.08] text-white max-w-4xl">
-            Arquitectura Integral.
+            {settings?.heroTitle || 'Arquitectura Integral.'}
           </h1>
 
           <p className="mt-6 text-base sm:text-lg md:text-xl text-neutral-300 max-w-2xl font-normal leading-relaxed">
-            Diseñamos y materializamos espacios singulares aunando rigor técnico, nobleza en los materiales y un control riguroso de cada etapa de obra.
+            {settings?.heroSubtitle ||
+              'Diseñamos y materializamos espacios singulares aunando rigor técnico, nobleza en los materiales y un control riguroso de cada etapa de obra.'}
           </p>
 
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
