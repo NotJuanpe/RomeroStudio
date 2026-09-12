@@ -1,5 +1,6 @@
 import { Project, ContactMessage, ServiceItem, SiteSettings, SiteStats } from './types';
 import { INITIAL_PROJECTS, INITIAL_SERVICES, INITIAL_MESSAGES } from './mockData';
+import { getSupabase, isSupabaseConfigured, uploadProjectImageToSupabase } from './lib/supabase';
 
 const DEFAULT_SETTINGS: SiteSettings = {
   studioName: 'Romero Estudio - Arquitectura Integral',
@@ -12,7 +13,78 @@ const DEFAULT_SETTINGS: SiteSettings = {
   whatsappNumber: '5491148009200',
 };
 
+export interface InfraStatus {
+  cloudflare: {
+    platform: string;
+    configured: boolean;
+    spaRedirects: boolean;
+    outputDir: string;
+    compatibilityDate: string;
+    statusText: string;
+  };
+  supabase: {
+    configured: boolean;
+    url: string | null;
+    hasServiceKey: boolean;
+    bucket: string;
+    statusText: string;
+  };
+  resend: {
+    configured: boolean;
+    recipient: string;
+    statusText: string;
+  };
+}
+
 export const api = {
+  // Cloud Infrastructure Status
+  async getInfraStatus(): Promise<InfraStatus> {
+    try {
+      const res = await fetch('/api/infra/status');
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch (e) {
+      console.warn('Infra status fallback:', e);
+    }
+    return {
+      cloudflare: {
+        platform: 'Cloudflare Pages',
+        configured: true,
+        spaRedirects: true,
+        outputDir: 'dist',
+        compatibilityDate: '2024-09-01',
+        statusText: 'Listo para despliegue (Git / Direct Upload)',
+      },
+      supabase: {
+        configured: isSupabaseConfigured(),
+        url: isSupabaseConfigured() ? 'Conectado a Supabase' : null,
+        hasServiceKey: false,
+        bucket: 'project-images',
+        statusText: isSupabaseConfigured() ? 'Conectado a Supabase' : 'Modo local activo (listo para vincular)',
+      },
+      resend: {
+        configured: false,
+        recipient: 'contacto@romeroestudio.com',
+        statusText: 'Modo simulado local (listo para vincular)',
+      },
+    };
+  },
+
+  // Storage / Upload helper
+  async uploadProjectImage(file: File): Promise<{ url: string | null; error: string | null }> {
+    if (isSupabaseConfigured()) {
+      return await uploadProjectImageToSupabase(file, 'renders');
+    }
+    // Fallback: convert to Object URL or base64 data for preview
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve({ url: reader.result as string, error: null });
+      reader.onerror = () => resolve({ url: null, error: 'Error al leer el archivo local' });
+      reader.readAsDataURL(file);
+    });
+  },
+
   // Stats
   async getStats(): Promise<SiteStats> {
     try {
@@ -41,6 +113,34 @@ export const api = {
 
   // Projects
   async getProjects(): Promise<Project[]> {
+    // If Supabase is connected, query Supabase
+    if (isSupabaseConfigured()) {
+      const supabase = getSupabase();
+      if (supabase) {
+        try {
+          const { data, error } = await supabase.from('projects').select('*');
+          if (!error && data && data.length > 0) {
+            return data.map((item: any) => ({
+              id: item.id,
+              title: item.title,
+              category: item.category,
+              description: item.description,
+              year: item.year,
+              area: item.surface || item.area || '250 m²',
+              scope: item.status || 'Obra Nueva',
+              materials: 'Materiales nobles seleccionados',
+              heroImage: item.images?.[0] || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
+              detailImage: item.images?.[1] || item.images?.[0],
+              status: item.status || 'En curso',
+              featured: true,
+            }));
+          }
+        } catch (err) {
+          console.warn('Supabase projects query failed, falling back to REST/local:', err);
+        }
+      }
+    }
+
     try {
       const res = await fetch('/api/projects');
       if (!res.ok) throw new Error('Failed to fetch projects');
@@ -52,6 +152,29 @@ export const api = {
   },
 
   async createProject(project: Partial<Project>): Promise<Project> {
+    // If Supabase is connected, save directly to Supabase as well
+    if (isSupabaseConfigured()) {
+      const supabase = getSupabase();
+      if (supabase) {
+        try {
+          const id = project.id || `proj-${Date.now()}`;
+          await supabase.from('projects').insert({
+            id,
+            title: project.title,
+            category: project.category,
+            description: project.description || '',
+            location: project.location || 'Buenos Aires',
+            year: project.year || new Date().getFullYear(),
+            surface: project.area || '250 m²',
+            status: project.status || 'En curso',
+            images: [project.heroImage, project.detailImage].filter(Boolean),
+          });
+        } catch (e) {
+          console.warn('Could not insert into Supabase directly:', e);
+        }
+      }
+    }
+
     const res = await fetch('/api/projects', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -62,6 +185,23 @@ export const api = {
   },
 
   async updateProject(id: string, updates: Partial<Project>): Promise<Project> {
+    if (isSupabaseConfigured()) {
+      const supabase = getSupabase();
+      if (supabase) {
+        try {
+          await supabase.from('projects').update({
+            title: updates.title,
+            category: updates.category,
+            description: updates.description,
+            surface: updates.area,
+            status: updates.status,
+          }).eq('id', id);
+        } catch (e) {
+          console.warn('Could not update Supabase project directly:', e);
+        }
+      }
+    }
+
     const res = await fetch(`/api/projects/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -72,6 +212,17 @@ export const api = {
   },
 
   async deleteProject(id: string): Promise<boolean> {
+    if (isSupabaseConfigured()) {
+      const supabase = getSupabase();
+      if (supabase) {
+        try {
+          await supabase.from('projects').delete().eq('id', id);
+        } catch (e) {
+          console.warn('Could not delete from Supabase directly:', e);
+        }
+      }
+    }
+
     const res = await fetch(`/api/projects/${id}`, {
       method: 'DELETE',
     });
@@ -79,8 +230,31 @@ export const api = {
     return true;
   },
 
-  // Messages
+  // Messages (Handles Resend delivery on server + Supabase storage)
   async getMessages(): Promise<ContactMessage[]> {
+    if (isSupabaseConfigured()) {
+      const supabase = getSupabase();
+      if (supabase) {
+        try {
+          const { data, error } = await supabase.from('messages').select('*').order('date', { ascending: false });
+          if (!error && data && data.length > 0) {
+            return data.map((m: any) => ({
+              id: m.id,
+              name: m.name,
+              email: m.email,
+              projectType: m.typology || 'Consulta General',
+              estimatedArea: m.budget || '',
+              message: m.message,
+              date: m.date,
+              status: m.status === 'read' ? 'Respondido' : 'Pendiente',
+            }));
+          }
+        } catch (e) {
+          console.warn('Supabase messages query fallback:', e);
+        }
+      }
+    }
+
     try {
       const res = await fetch('/api/messages');
       if (!res.ok) throw new Error('Failed to fetch messages');
@@ -92,6 +266,26 @@ export const api = {
   },
 
   async createMessage(msg: Omit<ContactMessage, 'id' | 'date' | 'status'>): Promise<ContactMessage> {
+    // If Supabase is connected, store in Supabase table
+    if (isSupabaseConfigured()) {
+      const supabase = getSupabase();
+      if (supabase) {
+        try {
+          await supabase.from('messages').insert({
+            id: `msg-${Date.now()}`,
+            name: msg.name,
+            email: msg.email,
+            typology: msg.projectType,
+            budget: msg.estimatedArea,
+            message: msg.message,
+            status: 'unread',
+          });
+        } catch (e) {
+          console.warn('Failed to insert message into Supabase directly:', e);
+        }
+      }
+    }
+
     const res = await fetch('/api/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -102,6 +296,19 @@ export const api = {
   },
 
   async updateMessageStatus(id: string, status: 'Pendiente' | 'Respondido'): Promise<ContactMessage> {
+    if (isSupabaseConfigured()) {
+      const supabase = getSupabase();
+      if (supabase) {
+        try {
+          await supabase.from('messages').update({
+            status: status === 'Respondido' ? 'read' : 'unread',
+          }).eq('id', id);
+        } catch (e) {
+          console.warn('Failed to update Supabase message:', e);
+        }
+      }
+    }
+
     const res = await fetch(`/api/messages/${id}/status`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -112,6 +319,17 @@ export const api = {
   },
 
   async deleteMessage(id: string): Promise<boolean> {
+    if (isSupabaseConfigured()) {
+      const supabase = getSupabase();
+      if (supabase) {
+        try {
+          await supabase.from('messages').delete().eq('id', id);
+        } catch (e) {
+          console.warn('Failed to delete Supabase message:', e);
+        }
+      }
+    }
+
     const res = await fetch(`/api/messages/${id}`, {
       method: 'DELETE',
     });
@@ -161,8 +379,35 @@ export const api = {
     return await res.json();
   },
 
-  // Authentication
+  // Authentication (Supabase Auth first if configured, else server API)
   async login(username: string, password: string): Promise<{ success: boolean; user?: any; error?: string }> {
+    // Supabase Auth attempt if configured
+    if (isSupabaseConfigured()) {
+      const supabase = getSupabase();
+      if (supabase) {
+        try {
+          const { data, error } = await supabase.auth.signInWithPassword({
+            email: username,
+            password,
+          });
+          if (!error && data?.user) {
+            return {
+              success: true,
+              user: {
+                username: data.user.email?.split('@')[0] || 'admin',
+                email: data.user.email,
+                name: data.user.user_metadata?.name || 'Director de Estudio',
+                role: 'Director de Estudio',
+                token: data.session?.access_token || 'supabase-token',
+              },
+            };
+          }
+        } catch (supabaseAuthErr) {
+          console.warn('Supabase Auth error, attempting local fallback:', supabaseAuthErr);
+        }
+      }
+    }
+
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',

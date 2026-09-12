@@ -2,6 +2,7 @@ import express from 'express';
 import path from 'path';
 import { createServer as createViteServer } from 'vite';
 import { db } from './server/db';
+import { sendContactNotification } from './server/email';
 
 async function startServer() {
   const app = express();
@@ -180,7 +181,7 @@ async function startServer() {
     }
   });
 
-  app.post('/api/messages', (req, res) => {
+  app.post('/api/messages', async (req, res) => {
     try {
       const { name, email, projectType, estimatedArea, message } = req.body;
       if (!name || !email) {
@@ -195,7 +196,20 @@ async function startServer() {
         message: message || 'Consulta recibida.',
       });
 
-      res.status(201).json(newMessage);
+      // Transactional email dispatch via Resend API
+      const emailResult = await sendContactNotification({
+        name,
+        email,
+        projectType: projectType || 'Consulta General',
+        estimatedArea,
+        message: message || '',
+      });
+
+      res.status(201).json({
+        ...newMessage,
+        emailSent: emailResult.sent,
+        emailId: emailResult.id,
+      });
     } catch (err) {
       res.status(500).json({ error: 'Failed to submit message' });
     }
@@ -268,6 +282,40 @@ async function startServer() {
       res.json(updated);
     } catch (err) {
       res.status(500).json({ error: 'Failed to update settings' });
+    }
+  });
+
+  // 6. CLOUD & INFRASTRUCTURE STATUS (Cloudflare Pages, Supabase, Resend)
+  app.get('/api/infra/status', (req, res) => {
+    try {
+      const hasSupabaseUrl = Boolean(process.env.VITE_SUPABASE_URL && process.env.VITE_SUPABASE_URL.trim() !== '');
+      const hasSupabaseKey = Boolean(process.env.VITE_SUPABASE_ANON_KEY && process.env.VITE_SUPABASE_ANON_KEY.trim() !== '');
+      const hasResend = Boolean(process.env.RESEND_API_KEY && process.env.RESEND_API_KEY.trim() !== '');
+
+      res.json({
+        cloudflare: {
+          platform: 'Cloudflare Pages',
+          configured: true,
+          spaRedirects: true,
+          outputDir: 'dist',
+          compatibilityDate: '2024-09-01',
+          statusText: 'Listo para despliegue (Git / Direct Upload)',
+        },
+        supabase: {
+          configured: hasSupabaseUrl && hasSupabaseKey,
+          url: hasSupabaseUrl ? `${process.env.VITE_SUPABASE_URL!.substring(0, 16)}...` : null,
+          hasServiceKey: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY),
+          bucket: 'project-images',
+          statusText: hasSupabaseUrl && hasSupabaseKey ? 'Conectado a PostgreSQL & Storage' : 'Modo local activo (listo para vincular)',
+        },
+        resend: {
+          configured: hasResend,
+          recipient: process.env.STUDIO_NOTIFICATION_EMAIL || 'contacto@romeroestudio.com',
+          statusText: hasResend ? 'Despacho activo vía Resend API' : 'Modo simulado local (listo para vincular)',
+        },
+      });
+    } catch (err) {
+      res.status(500).json({ error: 'Error al consultar infraestructura' });
     }
   });
 

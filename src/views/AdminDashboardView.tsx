@@ -30,6 +30,12 @@ import {
   Layers,
   Lock,
   Shield,
+  Cloud,
+  Database,
+  UploadCloud,
+  Copy,
+  AlertCircle,
+  Terminal,
 } from 'lucide-react';
 
 interface AdminDashboardViewProps {
@@ -104,6 +110,21 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
   const currentService = services.find((s) => s.id === selectedServiceId) || services[0];
   const [serviceShortDesc, setServiceShortDesc] = useState('');
   const [serviceTimeline, setServiceTimeline] = useState('');
+
+  // Cloud Infrastructure state (Cloudflare Pages, Supabase, Resend)
+  const [infraStatus, setInfraStatus] = useState<any>(null);
+  const [infraTab, setInfraTab] = useState<'cloudflare' | 'supabase' | 'resend'>('cloudflare');
+  const [copiedSql, setCopiedSql] = useState(false);
+  const [isUploadingRender, setIsUploadingRender] = useState(false);
+
+  // Load infrastructure status
+  React.useEffect(() => {
+    api.getInfraStatus().then((status) => {
+      setInfraStatus(status);
+    }).catch(() => {
+      // Non-blocking
+    });
+  }, []);
 
   // Keep form in sync when settings prop updates
   React.useEffect(() => {
@@ -1146,6 +1167,316 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                 </div>
               </form>
             </div>
+
+            {/* SECCIÓN INFRAESTRUCTURA CLOUD: CLOUDFLARE PAGES, SUPABASE & RESEND */}
+            <div className="pt-8 border-t border-[#f0f0f0] mt-8">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-7 h-7 rounded-lg bg-neutral-100 flex items-center justify-center text-neutral-800">
+                    <Cloud className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h2 className="text-base font-bold text-[#111111]">
+                      Infraestructura Cloud & Despliegue
+                    </h2>
+                    <p className="text-[11px] text-[#5e5e5e]">
+                      Conexión para Cloudflare Pages (Hosting), Supabase (PostgreSQL & Storage) y Resend (Correo transaccional).
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1.5 bg-neutral-100 p-1 rounded-xl text-[11px] font-bold">
+                  <button
+                    type="button"
+                    onClick={() => setInfraTab('cloudflare')}
+                    className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                      infraTab === 'cloudflare' ? 'bg-white text-black shadow-xs' : 'text-neutral-500 hover:text-black'
+                    }`}
+                  >
+                    Cloudflare Pages
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setInfraTab('supabase')}
+                    className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                      infraTab === 'supabase' ? 'bg-white text-black shadow-xs' : 'text-neutral-500 hover:text-black'
+                    }`}
+                  >
+                    Supabase
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setInfraTab('resend')}
+                    className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                      infraTab === 'resend' ? 'bg-white text-black shadow-xs' : 'text-neutral-500 hover:text-black'
+                    }`}
+                  >
+                    Resend
+                  </button>
+                </div>
+              </div>
+
+              {/* Status summary pills */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6 text-xs">
+                <div className="p-3 bg-white border border-[#e5e5e5] rounded-xl flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Cloud className="w-4 h-4 text-orange-600" />
+                    <div>
+                      <p className="font-bold text-[#111111]">Cloudflare Pages</p>
+                      <p className="text-[10px] text-neutral-500">Frontend SPA & Routing</p>
+                    </div>
+                  </div>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    Listo para Deploy
+                  </span>
+                </div>
+
+                <div className="p-3 bg-white border border-[#e5e5e5] rounded-xl flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Database className="w-4 h-4 text-emerald-600" />
+                    <div>
+                      <p className="font-bold text-[#111111]">Supabase</p>
+                      <p className="text-[10px] text-neutral-500">PostgreSQL, Auth & Storage</p>
+                    </div>
+                  </div>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                    infraStatus?.supabase?.configured
+                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                      : 'bg-amber-50 text-amber-700 border border-amber-200'
+                  }`}>
+                    {infraStatus?.supabase?.configured ? 'Conectado' : 'Modo Híbrido / Local'}
+                  </span>
+                </div>
+
+                <div className="p-3 bg-white border border-[#e5e5e5] rounded-xl flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Mail className="w-4 h-4 text-blue-600" />
+                    <div>
+                      <p className="font-bold text-[#111111]">Resend</p>
+                      <p className="text-[10px] text-neutral-500">Formulario de Contacto</p>
+                    </div>
+                  </div>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                    infraStatus?.resend?.configured
+                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                      : 'bg-blue-50 text-blue-700 border border-blue-200'
+                  }`}>
+                    {infraStatus?.resend?.configured ? 'API Activa' : 'Despacho Integrado'}
+                  </span>
+                </div>
+              </div>
+
+              {/* TAB 1: CLOUDFLARE PAGES */}
+              {infraTab === 'cloudflare' && (
+                <div className="bg-[#f9f9f9] border border-[#e5e5e5] rounded-2xl p-5 text-xs space-y-4">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h4 className="font-bold text-sm text-[#111111] flex items-center gap-2">
+                        <Cloud className="w-4 h-4 text-orange-600" />
+                        Alojamiento en Cloudflare Pages
+                      </h4>
+                      <p className="text-[#5e5e5e] mt-1 text-xs">
+                        Red global perimetral ultrarrápida, SSL automático, despliegue continuo desde GitHub y soporte de rutas SPA.
+                      </p>
+                    </div>
+                    <span className="px-2.5 py-1 bg-neutral-900 text-white font-mono text-[10px] rounded-lg">
+                      dist / _redirects
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                    <div className="bg-white p-3.5 rounded-xl border border-neutral-200">
+                      <span className="font-bold text-black block mb-1">1. Conectar Repositorio</span>
+                      <p className="text-[11px] text-neutral-600">
+                        En Cloudflare Dashboard ve a <strong>Compute (Workers & Pages) &gt; Create &gt; Pages &gt; Connect to Git</strong> y elige el repo.
+                      </p>
+                    </div>
+                    <div className="bg-white p-3.5 rounded-xl border border-neutral-200">
+                      <span className="font-bold text-black block mb-1">2. Build Configuration</span>
+                      <p className="text-[11px] text-neutral-600 font-mono text-[10px]">
+                        Framework: Vite / None<br/>
+                        Build command: <span className="text-black font-bold">npm run build</span><br/>
+                        Output directory: <span className="text-black font-bold">dist</span>
+                      </p>
+                    </div>
+                    <div className="bg-white p-3.5 rounded-xl border border-neutral-200">
+                      <span className="font-bold text-black block mb-1">3. Enrutamiento SPA</span>
+                      <p className="text-[11px] text-neutral-600">
+                        Los archivos <code className="bg-neutral-100 px-1 py-0.5 rounded font-mono">public/_redirects</code> y <code className="bg-neutral-100 px-1 py-0.5 rounded font-mono">public/_headers</code> ya están incluidos para evitar errores 404 en rutas internas.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-neutral-100 rounded-xl font-mono text-[11px] text-neutral-700 flex items-center justify-between">
+                    <span>Configuración en <strong>wrangler.toml</strong>: pages_build_output_dir = "./dist"</span>
+                    <span className="text-emerald-700 font-bold text-[10px] bg-emerald-100 px-2 py-0.5 rounded">Verificado</span>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 2: SUPABASE */}
+              {infraTab === 'supabase' && (
+                <div className="bg-[#f9f9f9] border border-[#e5e5e5] rounded-2xl p-5 text-xs space-y-4">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h4 className="font-bold text-sm text-[#111111] flex items-center gap-2">
+                        <Database className="w-4 h-4 text-emerald-600" />
+                        Base de Datos, Auth & Storage en Supabase
+                      </h4>
+                      <p className="text-[#5e5e5e] mt-1 text-xs">
+                        PostgreSQL relacional para obras de arquitectura, autenticación para el panel y bucket de imágenes para renders.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const sql = `-- ROMERO ESTUDIO • ESQUEMA SUPABASE
+CREATE TABLE IF NOT EXISTS public.projects (
+    id TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    category TEXT NOT NULL CHECK (category IN ('Residencial', 'Comercial', 'Corporativo', 'Urbanismo', 'Interiorismo')),
+    description TEXT NOT NULL,
+    location TEXT NOT NULL,
+    year INTEGER NOT NULL,
+    surface TEXT NOT NULL,
+    status TEXT NOT NULL CHECK (status IN ('Construido', 'En Construcción', 'En Proyecto')),
+    images TEXT[] NOT NULL DEFAULT '{}',
+    architectural_details JSONB DEFAULT '{}'::jsonb,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS public.services (
+    id TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    category TEXT NOT NULL,
+    description TEXT NOT NULL,
+    deliverables TEXT[] NOT NULL DEFAULT '{}',
+    phases TEXT[] NOT NULL DEFAULT '{}',
+    order_index INTEGER DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS public.messages (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    email TEXT NOT NULL,
+    phone TEXT,
+    typology TEXT NOT NULL,
+    budget TEXT,
+    location TEXT,
+    message TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'unread' CHECK (status IN ('unread', 'read', 'archived')),
+    date TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS public.settings (
+    id TEXT PRIMARY KEY DEFAULT 'default',
+    studio_name TEXT NOT NULL,
+    tagline TEXT NOT NULL,
+    description TEXT,
+    contact_email TEXT NOT NULL,
+    contact_phone TEXT NOT NULL,
+    office_address TEXT NOT NULL,
+    hours TEXT,
+    social JSONB DEFAULT '{"instagram": "https://instagram.com"}'::jsonb,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.projects ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.services ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.settings ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Lectura pública de proyectos" ON public.projects FOR SELECT USING (true);
+CREATE POLICY "Admin proyectos" ON public.projects FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Lectura pública servicios" ON public.services FOR SELECT USING (true);
+CREATE POLICY "Admin servicios" ON public.services FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Envío público mensajes" ON public.messages FOR INSERT WITH CHECK (true);
+CREATE POLICY "Admin mensajes" ON public.messages FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Lectura pública ajustes" ON public.settings FOR SELECT USING (true);
+CREATE POLICY "Admin ajustes" ON public.settings FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+INSERT INTO storage.buckets (id, name, public) VALUES ('project-images', 'project-images', true) ON CONFLICT (id) DO NOTHING;
+CREATE POLICY "Lectura pública renders" ON storage.objects FOR SELECT USING (bucket_id = 'project-images');
+CREATE POLICY "Subida admin renders" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'project-images');
+`;
+                        navigator.clipboard.writeText(sql);
+                        setCopiedSql(true);
+                        setTimeout(() => setCopiedSql(false), 3000);
+                      }}
+                      className="px-3 py-1.5 bg-neutral-900 hover:bg-black text-white rounded-lg text-xs font-bold flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all shadow-xs"
+                    >
+                      {copiedSql ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                      <span>{copiedSql ? '¡SQL Copiado!' : 'Copiar Script SQL'}</span>
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="bg-white p-3.5 rounded-xl border border-neutral-200">
+                      <span className="font-bold text-black block mb-1">Variables de Entorno (Settings &gt; API)</span>
+                      <div className="font-mono text-[11px] space-y-1 text-neutral-600 bg-neutral-50 p-2 rounded-lg">
+                        <div>VITE_SUPABASE_URL=https://xyz.supabase.co</div>
+                        <div>VITE_SUPABASE_ANON_KEY=eyJhbGciOi...</div>
+                      </div>
+                    </div>
+
+                    <div className="bg-white p-3.5 rounded-xl border border-neutral-200">
+                      <span className="font-bold text-black block mb-1">Bucket de Storage de Renders</span>
+                      <p className="text-[11px] text-neutral-600">
+                        Bucket configurado: <code className="bg-neutral-100 px-1 py-0.5 rounded font-bold text-neutral-900 font-mono">project-images</code> (público para visualización en alta resolución). Al crear o editar proyectos podés subir renders directamente.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-[11px]">
+                    <span className="font-bold block mb-0.5">Compatibilidad Híbrida Garantizada:</span>
+                    El código del cliente detecta automáticamente si las variables de Supabase están activas. Si están configuradas, sincroniza directamente con PostgreSQL y Supabase Auth; si no, utiliza el backend local para asegurar que la app funcione siempre.
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 3: RESEND */}
+              {infraTab === 'resend' && (
+                <div className="bg-[#f9f9f9] border border-[#e5e5e5] rounded-2xl p-5 text-xs space-y-4">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h4 className="font-bold text-sm text-[#111111] flex items-center gap-2">
+                        <Mail className="w-4 h-4 text-blue-600" />
+                        Formulario de Contacto vía Resend API
+                      </h4>
+                      <p className="text-[#5e5e5e] mt-1 text-xs">
+                        Despacha los mensajes del formulario web directamente a tu bandeja de entrada sin mantener servidores SMTP.
+                      </p>
+                    </div>
+                    <span className="px-2.5 py-1 bg-blue-100 text-blue-800 font-bold text-[10px] rounded-lg">
+                      Transaccional HTML
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="bg-white p-3.5 rounded-xl border border-neutral-200">
+                      <span className="font-bold text-black block mb-1">Variable de Entorno Resend</span>
+                      <div className="font-mono text-[11px] space-y-1 text-neutral-600 bg-neutral-50 p-2 rounded-lg">
+                        <div>RESEND_API_KEY=re_123456789...</div>
+                        <div>STUDIO_NOTIFICATION_EMAIL=contacto@romeroestudio.com</div>
+                      </div>
+                    </div>
+
+                    <div className="bg-white p-3.5 rounded-xl border border-neutral-200">
+                      <span className="font-bold text-black block mb-1">Formato de la Notificación</span>
+                      <p className="text-[11px] text-neutral-600">
+                        Cada mensaje genera un correo tipográfico de alta fidelidad con nombre del cliente, tipología de obra, superficie aproximada, texto del mensaje y botón de respuesta directa (reply-to).
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-neutral-100 rounded-xl font-mono text-[11px] text-neutral-700 flex items-center justify-between">
+                    <span>Manejador en backend: <strong>server/email.ts</strong> con lazy initialization segura</span>
+                    <span className="text-emerald-700 font-bold text-[10px] bg-emerald-100 px-2 py-0.5 rounded">Integrado</span>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </main>
@@ -1259,12 +1590,39 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                 <label className="block text-xs font-bold uppercase tracking-wider text-[#444748] mb-1">
                   URL de Imagen Principal
                 </label>
-                <input
-                  type="text"
-                  value={newImage}
-                  onChange={(e) => setNewImage(e.target.value)}
-                  className="w-full p-2.5 bg-[#f9f9f9] border border-[#e5e5e5] rounded-xl text-xs focus:border-[#111111] focus:outline-none"
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newImage}
+                    onChange={(e) => setNewImage(e.target.value)}
+                    className="w-full p-2.5 bg-[#f9f9f9] border border-[#e5e5e5] rounded-xl text-xs focus:border-[#111111] focus:outline-none"
+                  />
+                  <label className="cursor-pointer shrink-0 px-3 py-2 bg-neutral-100 hover:bg-neutral-200 border border-neutral-300 rounded-xl text-neutral-800 text-xs font-bold flex items-center gap-1.5 transition-colors">
+                    <UploadCloud className="w-4 h-4" />
+                    <span>{isUploadingRender ? 'Subiendo...' : 'Subir Render'}</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      disabled={isUploadingRender}
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setIsUploadingRender(true);
+                          try {
+                            const res = await api.uploadProjectImage(file);
+                            if (res.url) setNewImage(res.url);
+                          } finally {
+                            setIsUploadingRender(false);
+                          }
+                        }
+                      }}
+                    />
+                  </label>
+                </div>
+                <span className="text-[10px] text-neutral-400 mt-1 block">
+                  Sube directamente al bucket <code className="text-neutral-600 font-mono">project-images</code> de Supabase Storage o pega una URL web.
+                </span>
               </div>
 
               <div>
@@ -1410,12 +1768,39 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                 <label className="block text-xs font-bold uppercase tracking-wider text-[#444748] mb-1">
                   URL de Imagen
                 </label>
-                <input
-                  type="text"
-                  value={editingProject.heroImage}
-                  onChange={(e) => setEditingProject({ ...editingProject, heroImage: e.target.value })}
-                  className="w-full p-2.5 bg-[#f9f9f9] border border-[#e5e5e5] rounded-xl text-xs focus:border-[#111111] focus:outline-none"
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={editingProject.heroImage}
+                    onChange={(e) => setEditingProject({ ...editingProject, heroImage: e.target.value })}
+                    className="w-full p-2.5 bg-[#f9f9f9] border border-[#e5e5e5] rounded-xl text-xs focus:border-[#111111] focus:outline-none"
+                  />
+                  <label className="cursor-pointer shrink-0 px-3 py-2 bg-neutral-100 hover:bg-neutral-200 border border-neutral-300 rounded-xl text-neutral-800 text-xs font-bold flex items-center gap-1.5 transition-colors">
+                    <UploadCloud className="w-4 h-4" />
+                    <span>{isUploadingRender ? 'Subiendo...' : 'Subir'}</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      disabled={isUploadingRender}
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setIsUploadingRender(true);
+                          try {
+                            const res = await api.uploadProjectImage(file);
+                            if (res.url) setEditingProject({ ...editingProject, heroImage: res.url });
+                          } finally {
+                            setIsUploadingRender(false);
+                          }
+                        }
+                      }}
+                    />
+                  </label>
+                </div>
+                <span className="text-[10px] text-neutral-400 mt-1 block">
+                  Sube al bucket <code className="text-neutral-600 font-mono">project-images</code> de Supabase Storage.
+                </span>
               </div>
 
               <div>

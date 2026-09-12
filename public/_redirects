@@ -1,0 +1,3 @@
+# Cloudflare Pages SPA Routing
+# Redirige todas las rutas al index.html para soportar navegación del lado del cliente sin 404s
+/*    /index.html   200
