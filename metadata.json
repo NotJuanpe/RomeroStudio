@@ -1,0 +1,6 @@
+{
+  "name": "Romero Estudio - Arquitectura Integral",
+  "description": "Estudio de arquitectura técnica, obras de alta gama, reformas integrales y gestión de proyectos.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
