@@ -8,6 +8,7 @@ interface HeaderProps {
   onNavigate: (view: ScreenView) => void;
   onOpenContact: () => void;
   unreadCount?: number;
+  onReturnToLanding?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -15,6 +16,7 @@ export const Header: React.FC<HeaderProps> = ({
   onNavigate,
   onOpenContact,
   unreadCount = 3,
+  onReturnToLanding,
 }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -55,7 +57,13 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Brand Logo */}
         <Logo
           variant={isHomeHero ? 'hero' : 'dark'}
-          onClick={() => handleNavClick('inicio')}
+          onClick={() => {
+            if (currentView === 'inicio' && onReturnToLanding) {
+              onReturnToLanding();
+            } else {
+              handleNavClick('inicio');
+            }
+          }}
         />
 
         {/* Desktop Nav */}

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Project, ContactMessage, ServiceItem, ProjectCategory, ProjectStatus, SiteSettings, SiteStats, ScreenView } from '../types';
+import { api } from '../api';
 import {
   LayoutDashboard,
   FolderKanban,
@@ -27,6 +28,8 @@ import {
   ArrowLeft,
   Palette,
   Layers,
+  Lock,
+  Shield,
 } from 'lucide-react';
 
 interface AdminDashboardViewProps {
@@ -45,6 +48,8 @@ interface AdminDashboardViewProps {
   onUpdateService: (id: string, updates: Partial<ServiceItem>) => void;
   onRefreshData?: () => void;
   onNavigateView?: (view: ScreenView) => void;
+  onLogout?: () => void;
+  adminUser?: { name?: string; role?: string; email?: string } | null;
 }
 
 export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
@@ -63,10 +68,19 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
   onUpdateService,
   onRefreshData,
   onNavigateView,
+  onLogout,
+  adminUser,
 }) => {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'proyectos' | 'contenidos' | 'mensajes' | 'ajustes'>('dashboard');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
+
+  // Security & password state
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordStatus, setPasswordStatus] = useState<{ success?: boolean; message?: string } | null>(null);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   // New project form state
   const [newTitle, setNewTitle] = useState('');
@@ -155,6 +169,43 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
     });
     setSettingsSaved(true);
     setTimeout(() => setSettingsSaved(false), 2500);
+  };
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordStatus(null);
+
+    if (!currentPassword || !newPassword) {
+      setPasswordStatus({ success: false, message: 'Completa la contraseña actual y la nueva contraseña.' });
+      return;
+    }
+
+    if (newPassword.length < 4) {
+      setPasswordStatus({ success: false, message: 'La nueva contraseña debe tener al menos 4 caracteres.' });
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setPasswordStatus({ success: false, message: 'La confirmación de la nueva contraseña no coincide.' });
+      return;
+    }
+
+    setIsChangingPassword(true);
+    try {
+      const res = await api.changePassword(currentPassword, newPassword);
+      if (res.success) {
+        setPasswordStatus({ success: true, message: '✓ Contraseña actualizada correctamente en el servidor.' });
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+      } else {
+        setPasswordStatus({ success: false, message: res.error || 'No se pudo actualizar la contraseña.' });
+      }
+    } catch {
+      setPasswordStatus({ success: false, message: 'Error de comunicación con el servidor.' });
+    } finally {
+      setIsChangingPassword(false);
+    }
   };
 
   return (
@@ -294,27 +345,52 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-full bg-[#111111] text-white flex items-center justify-center text-xs font-bold">
-                AR
+                {adminUser?.name ? adminUser.name.split(' ').map(n => n[0]).slice(0, 2).join('') : 'AR'}
               </div>
-              <div>
-                <span className="block text-xs font-bold text-[#111111]">Arq. Romero</span>
-                <span className="block text-[10px] text-[#5e5e5e]">Director Técnico</span>
+              <div className="overflow-hidden">
+                <span className="block text-xs font-bold text-[#111111] truncate max-w-[110px]">
+                  {adminUser?.name || 'Arq. Romero'}
+                </span>
+                <span className="block text-[10px] text-[#5e5e5e] truncate max-w-[110px]">
+                  {adminUser?.role || 'Director Técnico'}
+                </span>
               </div>
             </div>
-            {onRefreshData && (
-              <button
-                title="Sincronizar Datos"
-                onClick={onRefreshData}
-                className="p-1.5 text-[#5e5e5e] hover:text-black transition-colors rounded-lg hover:bg-neutral-100"
-              >
-                <RefreshCw className="w-3.5 h-3.5" />
-              </button>
-            )}
+            <div className="flex items-center gap-1">
+              {onRefreshData && (
+                <button
+                  title="Sincronizar Datos"
+                  onClick={onRefreshData}
+                  className="p-1.5 text-[#5e5e5e] hover:text-black transition-colors rounded-lg hover:bg-neutral-100 cursor-pointer"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                </button>
+              )}
+              {onLogout && (
+                <button
+                  title="Cerrar Sesión"
+                  onClick={onLogout}
+                  className="p-1.5 text-red-600 hover:text-red-700 transition-colors rounded-lg hover:bg-red-50 cursor-pointer"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
           </div>
 
-          <div className="p-2.5 bg-neutral-50 rounded-xl border border-neutral-200 text-[10px] text-neutral-500 flex items-center gap-2">
-            <Server className="w-3 h-3 text-emerald-600 shrink-0" />
-            <span className="truncate">Express Node.js / Port 3000</span>
+          <div className="p-2.5 bg-neutral-50 rounded-xl border border-neutral-200 text-[10px] text-neutral-500 flex items-center justify-between">
+            <div className="flex items-center gap-2 overflow-hidden">
+              <Server className="w-3 h-3 text-emerald-600 shrink-0" />
+              <span className="truncate">Node.js API • Port 3000</span>
+            </div>
+            {onLogout && (
+              <button
+                onClick={onLogout}
+                className="text-[10px] font-bold text-red-600 hover:underline cursor-pointer"
+              >
+                Salir
+              </button>
+            )}
           </div>
         </div>
       </aside>
@@ -987,6 +1063,89 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                 </button>
               </div>
             </form>
+
+            {/* SECCIÓN SEGURIDAD Y ACCESO */}
+            <div className="pt-8 border-t border-[#f0f0f0] mt-8">
+              <div className="flex items-center gap-2.5 mb-2">
+                <div className="w-7 h-7 rounded-lg bg-neutral-100 flex items-center justify-center text-neutral-800">
+                  <Shield className="w-4 h-4" />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-[#111111]">
+                    Seguridad y Clave de Administrador
+                  </h2>
+                  <p className="text-[11px] text-[#5e5e5e]">
+                    Modifica la contraseña requerida para ingresar al panel de control.
+                  </p>
+                </div>
+              </div>
+
+              {passwordStatus && (
+                <div
+                  className={`mt-4 p-3.5 rounded-xl text-xs flex items-center gap-2 ${
+                    passwordStatus.success
+                      ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                      : 'bg-red-50 text-red-700 border border-red-200'
+                  }`}
+                >
+                  <span>{passwordStatus.message}</span>
+                </div>
+              )}
+
+              <form onSubmit={handlePasswordChange} className="mt-4 space-y-4 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block font-bold text-[#111111] mb-1">
+                      Contraseña Actual
+                    </label>
+                    <input
+                      type="password"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      placeholder="••••••••••••"
+                      className="w-full p-2.5 bg-[#f9f9f9] border border-[#e5e5e5] rounded-xl text-neutral-800 focus:border-[#111111] focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-[#111111] mb-1">
+                      Nueva Contraseña
+                    </label>
+                    <input
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="Mínimo 4 caracteres"
+                      className="w-full p-2.5 bg-[#f9f9f9] border border-[#e5e5e5] rounded-xl text-neutral-800 focus:border-[#111111] focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-[#111111] mb-1">
+                      Confirmar Nueva Contraseña
+                    </label>
+                    <input
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="Repetir nueva contraseña"
+                      className="w-full p-2.5 bg-[#f9f9f9] border border-[#e5e5e5] rounded-xl text-neutral-800 focus:border-[#111111] focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end pt-2">
+                  <button
+                    type="submit"
+                    disabled={isChangingPassword}
+                    className="px-6 py-2.5 bg-neutral-900 hover:bg-black text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-xs cursor-pointer flex items-center gap-2 active:scale-95 disabled:opacity-50"
+                  >
+                    <Lock className="w-4 h-4" />
+                    <span>{isChangingPassword ? 'Guardando...' : 'Actualizar Contraseña'}</span>
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         )}
       </main>

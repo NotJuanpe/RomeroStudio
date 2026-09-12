@@ -28,6 +28,13 @@ interface DatabaseSchema {
   services: ServiceItem[];
   messages: ContactMessage[];
   settings: SiteSettings;
+  admin: {
+    username: string;
+    email: string;
+    password: string;
+    name: string;
+    role: string;
+  };
   stats: {
     visits: number;
   };
@@ -35,6 +42,14 @@ interface DatabaseSchema {
 
 const DATA_DIR = path.join(process.cwd(), 'data');
 const DB_FILE = path.join(DATA_DIR, 'db.json');
+
+const DEFAULT_ADMIN = {
+  username: 'admin',
+  email: 'admin@romeroestudio.com',
+  password: 'romeroestudio',
+  name: 'Arq. Ignacio Romero',
+  role: 'Director de Estudio',
+};
 
 const DEFAULT_SETTINGS: SiteSettings = {
   studioName: 'Romero Estudio - Arquitectura Integral',
@@ -53,6 +68,7 @@ let dbCache: DatabaseSchema = {
   services: [...INITIAL_SERVICES],
   messages: [...INITIAL_MESSAGES],
   settings: { ...DEFAULT_SETTINGS },
+  admin: { ...DEFAULT_ADMIN },
   stats: { visits: 2418 },
 };
 
@@ -70,6 +86,7 @@ function ensureDbFile() {
         services: parsed.services || INITIAL_SERVICES,
         messages: parsed.messages || INITIAL_MESSAGES,
         settings: { ...DEFAULT_SETTINGS, ...(parsed.settings || {}) },
+        admin: { ...DEFAULT_ADMIN, ...(parsed.admin || {}) },
         stats: { visits: parsed.stats?.visits ?? 2418 },
       };
     } else {
@@ -200,5 +217,54 @@ export const db = {
     dbCache.stats.visits += 1;
     saveDb();
     return dbCache.stats.visits;
+  },
+
+  // Authentication
+  validateLogin: (userOrEmail: string, pass: string): { valid: boolean; user?: { username: string; email: string; name: string; role: string; token: string } } => {
+    const input = userOrEmail.trim().toLowerCase();
+    const admin = dbCache.admin || DEFAULT_ADMIN;
+    
+    const matchesUser = input === admin.username.toLowerCase() || input === admin.email.toLowerCase();
+    const matchesPass = pass === admin.password;
+
+    if (matchesUser && matchesPass) {
+      // Simple signed deterministic session token for demo/production CMS
+      const token = `romero-token-${Buffer.from(`${admin.username}:${Date.now()}`).toString('base64')}`;
+      return {
+        valid: true,
+        user: {
+          username: admin.username,
+          email: admin.email,
+          name: admin.name,
+          role: admin.role,
+          token,
+        },
+      };
+    }
+
+    return { valid: false };
+  },
+
+  getAdminProfile: () => {
+    const admin = dbCache.admin || DEFAULT_ADMIN;
+    return {
+      username: admin.username,
+      email: admin.email,
+      name: admin.name,
+      role: admin.role,
+    };
+  },
+
+  updateAdminPassword: (currentPass: string, newPass: string): { success: boolean; message: string } => {
+    const admin = dbCache.admin || DEFAULT_ADMIN;
+    if (admin.password !== currentPass) {
+      return { success: false, message: 'La contraseña actual no es correcta.' };
+    }
+    if (!newPass || newPass.length < 4) {
+      return { success: false, message: 'La nueva contraseña debe tener al menos 4 caracteres.' };
+    }
+    dbCache.admin.password = newPass;
+    saveDb();
+    return { success: true, message: 'Contraseña actualizada exitosamente.' };
   },
 };

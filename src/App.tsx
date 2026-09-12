@@ -13,6 +13,7 @@ import { WhatsAppButton } from './components/WhatsAppButton';
 import { ContactModal } from './components/ContactModal';
 import { ProjectDetailModal } from './components/ProjectDetailModal';
 import { SplashScreen } from './components/SplashScreen';
+import { AdminLoginView } from './components/AdminLoginView';
 
 // Views
 import { HomeView } from './views/HomeView';
@@ -52,7 +53,15 @@ const getInitialView = (): ScreenView => {
 
 export default function App() {
   const [currentView, setCurrentView] = useState<ScreenView>(getInitialView);
-  const [showSplash, setShowSplash] = useState<boolean>(false);
+  const [hasEntered, setHasEntered] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    const hash = window.location.hash.replace('#', '').toLowerCase();
+    const search = new URLSearchParams(window.location.search);
+    // If arriving specifically with deep link to a subpage or admin, bypass landing
+    if (hash && hash !== 'inicio' && hash !== 'landing') return true;
+    if (search.has('admin') || search.has('panel') || search.has('view')) return true;
+    return false;
+  });
   const [projects, setProjects] = useState<Project[]>(INITIAL_PROJECTS);
   const [services, setServices] = useState<ServiceItem[]>(INITIAL_SERVICES);
   const [messages, setMessages] = useState<ContactMessage[]>(INITIAL_MESSAGES);
@@ -65,9 +74,31 @@ export default function App() {
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [toastText, setToastText] = useState<string | null>(null);
 
+  // Authenticated Admin Session
+  const [adminUser, setAdminUser] = useState<any>(() => {
+    if (typeof window === 'undefined') return null;
+    const saved = localStorage.getItem('romero_admin_session') || sessionStorage.getItem('romero_admin_session');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  });
+
   const showToast = (text: string) => {
     setToastText(text);
     setTimeout(() => setToastText(null), 3500);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('romero_admin_session');
+    sessionStorage.removeItem('romero_admin_session');
+    setAdminUser(null);
+    showToast('Sesión de administración cerrada.');
+    handleNavigate('inicio');
   };
 
   const handleNavigate = (view: ScreenView) => {
@@ -84,8 +115,17 @@ export default function App() {
   // Sync hash routing so URLs like #panel, #marca, #ui-kit work cleanly
   useEffect(() => {
     const handleHashChange = () => {
+      const hash = window.location.hash.replace('#', '').toLowerCase();
+      if (hash === 'landing') {
+        setHasEntered(false);
+        setCurrentView('inicio');
+        return;
+      }
       const view = getInitialView();
       setCurrentView(view);
+      if (view !== 'inicio') {
+        setHasEntered(true);
+      }
     };
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
@@ -260,9 +300,14 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#f9f9f9] text-[#1a1c1c] flex flex-col selection:bg-black selection:text-white">
-      {/* Optional Splash Screen Intro */}
-      {showSplash && (
-        <SplashScreen onEnter={() => setShowSplash(false)} />
+      {/* Minimalist Landing Page Cover (matches user reference) */}
+      {!hasEntered && (
+        <SplashScreen
+          onEnter={() => {
+            setHasEntered(true);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+        />
       )}
 
       {/* Global Navigation Header - ONLY public sections are shown */}
@@ -271,6 +316,10 @@ export default function App() {
         onNavigate={handleNavigate}
         onOpenContact={() => setIsContactModalOpen(true)}
         unreadCount={unreadCount}
+        onReturnToLanding={() => {
+          setHasEntered(false);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
       />
 
       {/* Main View Router */}
@@ -314,39 +363,75 @@ export default function App() {
         )}
 
         {currentView === 'panel' && (
-          <AdminDashboardView
-            projects={projects}
-            messages={messages}
-            services={services}
-            settings={settings}
-            stats={stats}
-            onAddProject={handleAddProject}
-            onUpdateProject={handleUpdateProject}
-            onDeleteProject={handleDeleteProject}
-            onSelectProject={setSelectedProject}
-            onToggleMessageStatus={handleToggleMessageStatus}
-            onDeleteMessage={handleDeleteMessage}
-            onUpdateSettings={handleUpdateSettings}
-            onUpdateService={handleUpdateService}
-            onRefreshData={refreshBackendData}
-            onNavigateView={handleNavigate}
-          />
+          adminUser ? (
+            <AdminDashboardView
+              projects={projects}
+              messages={messages}
+              services={services}
+              settings={settings}
+              stats={stats}
+              adminUser={adminUser}
+              onLogout={handleLogout}
+              onAddProject={handleAddProject}
+              onUpdateProject={handleUpdateProject}
+              onDeleteProject={handleDeleteProject}
+              onSelectProject={setSelectedProject}
+              onToggleMessageStatus={handleToggleMessageStatus}
+              onDeleteMessage={handleDeleteMessage}
+              onUpdateSettings={handleUpdateSettings}
+              onUpdateService={handleUpdateService}
+              onRefreshData={refreshBackendData}
+              onNavigateView={handleNavigate}
+            />
+          ) : (
+            <AdminLoginView
+              onLoginSuccess={(user) => {
+                setAdminUser(user);
+                showToast(`Bienvenido al panel, ${user.name || 'Administrador'}`);
+              }}
+              onNavigateBack={() => handleNavigate('inicio')}
+            />
+          )
         )}
 
         {currentView === 'marca' && (
-          <BrandGuidelinesView onNavigate={handleNavigate} />
+          adminUser ? (
+            <BrandGuidelinesView onNavigate={handleNavigate} />
+          ) : (
+            <AdminLoginView
+              onLoginSuccess={(user) => {
+                setAdminUser(user);
+                showToast(`Acceso concedido`);
+              }}
+              onNavigateBack={() => handleNavigate('inicio')}
+            />
+          )
         )}
 
         {currentView === 'ui-kit' && (
-          <UIKitView onNavigate={handleNavigate} />
+          adminUser ? (
+            <UIKitView onNavigate={handleNavigate} />
+          ) : (
+            <AdminLoginView
+              onLoginSuccess={(user) => {
+                setAdminUser(user);
+                showToast(`Acceso concedido`);
+              }}
+              onNavigateBack={() => handleNavigate('inicio')}
+            />
+          )
         )}
       </main>
 
       {/* Global Footer (shown on public views) */}
-      {currentView !== 'panel' && (
+      {currentView !== 'panel' && currentView !== 'marca' && currentView !== 'ui-kit' && (
         <Footer
           onNavigate={handleNavigate}
           onOpenContact={() => setIsContactModalOpen(true)}
+          onReturnToLanding={() => {
+            setHasEntered(false);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
         />
       )}
 

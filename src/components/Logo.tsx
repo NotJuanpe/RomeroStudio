@@ -2,7 +2,7 @@ import React from 'react';
 
 interface LogoProps {
   variant?: 'dark' | 'light' | 'outline' | 'hero';
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
   onClick?: () => void;
 }
@@ -31,6 +31,11 @@ export const Logo: React.FC<LogoProps> = ({
       container: 'px-6 py-3 rounded-[18px] border-[2.5px]',
       romero: 'text-[20px] sm:text-[22px] tracking-[0.18em] font-extrabold',
       estudio: 'text-[15px] sm:text-[17px] tracking-[0.28em] font-light -mt-0.5',
+    },
+    xl: {
+      container: 'px-8 py-4 sm:px-11 sm:py-5 rounded-[22px] sm:rounded-[26px] border-[2.5px] sm:border-[3px]',
+      romero: 'text-[26px] sm:text-[34px] tracking-[0.18em] font-extrabold',
+      estudio: 'text-[19px] sm:text-[25px] tracking-[0.3em] font-light -mt-0.5 sm:-mt-1',
     },
   };
 

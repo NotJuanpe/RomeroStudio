@@ -1,53 +1,55 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Logo } from './Logo';
-import { ArrowRight } from 'lucide-react';
 
-interface SplashScreenProps {
+interface LandingIntroProps {
   onEnter: () => void;
 }
 
-export const SplashScreen: React.FC<SplashScreenProps> = ({ onEnter }) => {
+export const SplashScreen: React.FC<LandingIntroProps> = ({ onEnter }) => {
+  const [isExiting, setIsExiting] = useState(false);
+
+  const handleEnter = () => {
+    if (isExiting) return;
+    setIsExiting(true);
+    // Allow smooth fade-out transition before unmounting
+    setTimeout(() => {
+      onEnter();
+    }, 450);
+  };
+
   return (
     <div
-      id="splash-intro-screen"
-      onClick={onEnter}
-      className="fixed inset-0 z-50 bg-[#111111] text-white flex flex-col items-center justify-between p-8 sm:p-12 cursor-pointer select-none animate-in fade-in duration-500"
+      id="landing-cover-screen"
+      onClick={handleEnter}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleEnter();
+        }
+      }}
+      className={`fixed inset-0 z-[100] bg-white flex flex-col items-center justify-center select-none cursor-pointer transition-all duration-500 ease-out ${
+        isExiting
+          ? 'opacity-0 scale-[1.02] pointer-events-none'
+          : 'opacity-100 scale-100'
+      }`}
+      aria-label="Romero Estudio - Hacer clic para ingresar al sitio web"
     >
-      <div className="w-full flex justify-between items-center text-xs opacity-50 font-bold uppercase tracking-widest">
-        <span>Romero Estudio</span>
-        <span>Buenos Aires • 2026</span>
-      </div>
-
-      {/* Centered Identity */}
-      <div className="flex flex-col items-center text-center max-w-lg space-y-6">
-        <div className="p-4 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-md">
-          <Logo variant="hero" size="lg" />
+      {/* Centered Brand Unit */}
+      <div className="flex flex-col items-center justify-center text-center px-6 transition-transform duration-300 hover:scale-[1.015]">
+        {/* Custom Logo in prominent presentation */}
+        <div className="p-3">
+          <Logo variant="dark" size="xl" />
         </div>
 
-        <div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
-            Arquitectura Integral
-          </h1>
-          <p className="mt-3 text-xs sm:text-sm text-neutral-400 font-normal leading-relaxed">
-            Obras de alta gama, reformas integrales y dirección técnica rigurosa.
-          </p>
-        </div>
-
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onEnter();
-          }}
-          className="mt-6 px-8 py-3.5 bg-white text-[#111111] hover:bg-neutral-100 font-bold text-xs uppercase tracking-[0.2em] rounded-full transition-all cursor-pointer shadow-xl active:scale-95 flex items-center gap-2"
+        {/* Action Callout */}
+        <p
+          id="landing-cta-text"
+          className="mt-10 sm:mt-12 text-[11px] sm:text-[12px] font-semibold tracking-[0.24em] sm:tracking-[0.28em] text-neutral-500 uppercase transition-all duration-300 hover:text-[#111111] hover:tracking-[0.3em]"
         >
-          <span>Hacer Clic Para Ingresar</span>
-          <ArrowRight className="w-4 h-4" />
-        </button>
-      </div>
-
-      {/* Footer hint */}
-      <div className="text-[11px] text-neutral-500 uppercase tracking-widest">
-        Toca cualquier parte de la pantalla para continuar
+          Hacer Clic Para Ingresar
+        </p>
       </div>
     </div>
   );

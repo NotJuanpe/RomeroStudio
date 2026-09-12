@@ -6,9 +6,10 @@ import { ArrowUpRight, Mail, Phone, MapPin, Instagram, Linkedin, Lock } from 'lu
 interface FooterProps {
   onNavigate: (view: ScreenView) => void;
   onOpenContact: () => void;
+  onReturnToLanding?: () => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenContact }) => {
+export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenContact, onReturnToLanding }) => {
   return (
     <footer id="app-main-footer" className="bg-[#111111] text-white pt-16 pb-12 border-t border-black">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -179,6 +180,18 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenContact }) => 
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-neutral-500">
           <p>© {new Date().getFullYear()} Romero Estudio. Arquitectura Integral. Todos los derechos reservados.</p>
           <div className="flex items-center gap-5">
+            {onReturnToLanding && (
+              <>
+                <button
+                  onClick={onReturnToLanding}
+                  className="hover:text-neutral-300 transition-colors cursor-pointer"
+                  title="Volver a la Portada Minimalista"
+                >
+                  Portada
+                </button>
+                <span className="text-neutral-700">|</span>
+              </>
+            )}
             <span className="hover:text-neutral-300 transition-colors">Privacidad</span>
             <span className="hover:text-neutral-300 transition-colors">Términos</span>
             <span className="text-neutral-700">|</span>

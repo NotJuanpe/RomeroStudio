@@ -18,6 +18,56 @@ async function startServer() {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
   });
 
+  // 0. AUTHENTICATION & SECURITY
+  app.post('/api/auth/login', (req, res) => {
+    try {
+      const { username, password } = req.body;
+      if (!username || !password) {
+        return res.status(400).json({ error: 'Usuario o correo y contraseña requeridos' });
+      }
+
+      const result = db.validateLogin(username, password);
+      if (!result.valid || !result.user) {
+        return res.status(401).json({ error: 'Credenciales inválidas. Comprueba tu usuario y contraseña.' });
+      }
+
+      res.json({
+        success: true,
+        user: result.user,
+        message: 'Sesión iniciada correctamente',
+      });
+    } catch (err) {
+      res.status(500).json({ error: 'Error en el proceso de autenticación' });
+    }
+  });
+
+  app.get('/api/auth/profile', (req, res) => {
+    try {
+      const profile = db.getAdminProfile();
+      res.json(profile);
+    } catch (err) {
+      res.status(500).json({ error: 'Error al consultar perfil' });
+    }
+  });
+
+  app.post('/api/auth/change-password', (req, res) => {
+    try {
+      const { currentPassword, newPassword } = req.body;
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({ error: 'Se requiere contraseña actual y nueva contraseña' });
+      }
+
+      const result = db.updateAdminPassword(currentPassword, newPassword);
+      if (!result.success) {
+        return res.status(400).json({ error: result.message });
+      }
+
+      res.json({ success: true, message: result.message });
+    } catch (err) {
+      res.status(500).json({ error: 'Error al cambiar la contraseña' });
+    }
+  });
+
   // 1. STATS & ANALYTICS
   app.get('/api/stats', (req, res) => {
     try {
