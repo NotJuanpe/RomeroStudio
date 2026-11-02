@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Project, ProjectCategory } from '../types';
 import { BeforeAfterSlider } from '../components/BeforeAfterSlider';
+import { LazyImage } from '../components/LazyImage';
 import {
   Search,
   Filter,
@@ -169,13 +170,13 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                     onClick={() => onSelectProject(casaDelOlmo)}
                     className="relative h-72 sm:h-96 rounded-2xl overflow-hidden cursor-pointer group bg-neutral-900 border border-[#e5e5e5]"
                   >
-                    <img
+                    <LazyImage
                       src={casaDelOlmo.heroImage}
                       alt={casaDelOlmo.title}
                       className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-500"
-                      referrerPolicy="no-referrer"
+                      containerClassName="w-full h-full"
                     />
-                    <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-white text-[10px] font-bold uppercase tracking-wider">
+                    <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-white text-[10px] font-bold uppercase tracking-wider z-10">
                       Vista Principal Interior
                     </div>
                   </div>
@@ -188,13 +189,13 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                         onClick={() => onSelectProject(casaDelOlmo)}
                         className="relative h-56 rounded-2xl overflow-hidden cursor-pointer group bg-neutral-100 border border-[#e5e5e5]"
                       >
-                        <img
+                        <LazyImage
                           src={casaDelOlmo.detailImage}
                           alt="Detalle escalera y ladrillo"
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                          referrerPolicy="no-referrer"
+                          containerClassName="w-full h-full"
                         />
-                        <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-md text-[10px] font-extrabold text-[#111111]">
+                        <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-md text-[10px] font-extrabold text-[#111111] z-10">
                           Detalle Constructivo • Ladrillo & Madera
                         </div>
                       </div>
@@ -208,11 +209,11 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                       >
                         {/* Background split preview */}
                         <div className="absolute inset-0 opacity-40 group-hover:opacity-50 transition-opacity">
-                          <img
+                          <LazyImage
                             src={casaDelOlmo.afterImage || casaDelOlmo.heroImage}
                             alt="Comparativa"
                             className="w-full h-full object-cover"
-                            referrerPolicy="no-referrer"
+                            containerClassName="w-full h-full"
                           />
                         </div>
 
@@ -261,13 +262,13 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                     onClick={() => onSelectProject(estudioNorte)}
                     className="relative h-72 sm:h-96 rounded-2xl overflow-hidden cursor-pointer group bg-neutral-900 border border-[#e5e5e5]"
                   >
-                    <img
+                    <LazyImage
                       src={estudioNorte.heroImage}
                       alt={estudioNorte.title}
                       className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-500"
-                      referrerPolicy="no-referrer"
+                      containerClassName="w-full h-full"
                     />
-                    <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-white text-[10px] font-bold uppercase tracking-wider">
+                    <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-white text-[10px] font-bold uppercase tracking-wider z-10">
                       Espacio Corporativo Diáfano
                     </div>
                   </div>
@@ -278,13 +279,13 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                         onClick={() => onSelectProject(estudioNorte)}
                         className="relative h-56 rounded-2xl overflow-hidden cursor-pointer group bg-neutral-100 border border-[#e5e5e5]"
                       >
-                        <img
+                        <LazyImage
                           src={estudioNorte.detailImage}
                           alt="Detalle mobiliario y diseño"
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                          referrerPolicy="no-referrer"
+                          containerClassName="w-full h-full"
                         />
-                        <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-md text-[10px] font-extrabold text-[#111111]">
+                        <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-md text-[10px] font-extrabold text-[#111111] z-10">
                           Mobiliario Integrado a Medida
                         </div>
                       </div>
@@ -296,11 +297,11 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                         className="h-56 bg-[#1a1c1c] text-white rounded-2xl p-5 flex flex-col justify-between relative overflow-hidden group cursor-pointer border border-[#e5e5e5]"
                       >
                         <div className="absolute inset-0 opacity-30 group-hover:opacity-40 transition-opacity">
-                          <img
+                          <LazyImage
                             src={estudioNorte.heroImage}
                             alt="Comparativa"
                             className="w-full h-full object-cover"
-                            referrerPolicy="no-referrer"
+                            containerClassName="w-full h-full"
                           />
                         </div>
                         <div className="relative z-10">
@@ -398,18 +399,18 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                 className="group bg-white rounded-2xl overflow-hidden border border-[#e5e5e5] hover:border-black/30 shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col cursor-pointer"
               >
                 <div className="relative h-64 overflow-hidden bg-neutral-900">
-                  <img
+                  <LazyImage
                     src={project.heroImage}
                     alt={project.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    referrerPolicy="no-referrer"
+                    containerClassName="w-full h-full"
                   />
-                  <div className="absolute top-4 left-4">
+                  <div className="absolute top-4 left-4 z-10">
                     <span className="px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-white/90 backdrop-blur-md text-[#111111] shadow-xs">
                       {project.category}
                     </span>
                   </div>
-                  <div className="absolute bottom-4 right-4">
+                  <div className="absolute bottom-4 right-4 z-10">
                     <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-black/60 backdrop-blur-md text-white">
                       {project.year}
                     </span>

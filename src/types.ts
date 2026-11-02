@@ -33,6 +33,7 @@ export interface ServiceItem {
   icon: string;
   deliverables: string[];
   timeline: string;
+  image?: string;
 }
 
 export interface ContactMessage {

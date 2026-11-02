@@ -24,6 +24,11 @@ export const INITIAL_PROJECTS: Project[] = [
     client: 'Privado',
     featured: true,
     status: 'Completado',
+    gallery: [
+      'https://lh3.googleusercontent.com/aida/AEtjO1XFhEUtn0AKqzYb88n4nHc3xppmzqkMsMQktrDotbmXcEJJ5x2yGg-UyJNtK85xCuxodCYAmb1JgaB98W9CBKSVS-wA_d0p7Ws1GZHHq_7Ypijl1tEdVsnHfu5M9bwxgE6o2NxzsJXQ-_REGIQ7FYGbHIkZovsSdYO5VhTaMjRcEitzjpu8FmkDbLLFrGvzWVUbi1bz4PGYUCIOOnSinnC4mst_hHiq0oWXMhnrGchBHkAKieE2_omL8mp8',
+      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80',
+    ],
     specs: {
       'Plazo de Ejecución': '10 meses',
       'Eficiencia Energética': 'Calificación A+',
@@ -148,6 +153,8 @@ export const INITIAL_SERVICES: ServiceItem[] = [
       'Acompañamiento completo desde la conceptualización arquitectónica y proyecto de ejecución hasta la entrega definitiva de llaves. Optimizamos costes, garantizamos plazos y aplicamos los más estrictos estándares técnicos constructivos.',
     icon: 'architecture',
     timeline: 'De 6 a 14 meses según tipología',
+    image:
+      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1000&q=80',
     deliverables: [
       'Memoria técnica constructiva y planos visados',
       'Modelado 3D BIM y visualizaciones fotorrealistas',
@@ -164,6 +171,8 @@ export const INITIAL_SERVICES: ServiceItem[] = [
       'Servicio de Project Management enfocado en inversores y particulares que buscan control absoluto del presupuesto, minimización de riesgos y total transparencia en cada certificación de obra.',
     icon: 'space_dashboard',
     timeline: 'Durante todo el ciclo del encargo',
+    image:
+      'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1000&q=80',
     deliverables: [
       'Plataforma digital de seguimiento en tiempo real',
       'Licitación transparente y comparativo de proveedores',
@@ -180,6 +189,8 @@ export const INITIAL_SERVICES: ServiceItem[] = [
       'Presencia activa en obra por parte de arquitectos directores para verificar la correcta puesta en obra de materiales, encuentros singulares, aislamientos y cumplimiento de las normativas vigentes.',
     icon: 'engineering',
     timeline: 'Supervisión semanal continuada',
+    image:
+      'https://images.unsplash.com/photo-1541888946425-d0fbb186c5f7?auto=format&fit=crop&w=1000&q=80',
     deliverables: [
       'Libro de órdenes y actas de visita técnica',
       'Control de calidad de hormigones y ensayos de laboratorio',

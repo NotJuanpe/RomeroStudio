@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Project } from '../types';
 import { BeforeAfterSlider } from './BeforeAfterSlider';
-import { X, Calendar, Layers, MapPin, CheckCircle2, ArrowRight, Share2, Ruler } from 'lucide-react';
+import { LazyImage } from './LazyImage';
+import { X, Calendar, Layers, MapPin, CheckCircle2, ArrowRight, Share2, Ruler, ArrowLeftRight } from 'lucide-react';
 
 interface ProjectDetailModalProps {
   project: Project | null;
@@ -15,6 +16,26 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
   onInquireProject,
 }) => {
   const [activeTab, setActiveTab] = useState<'fotos' | 'ficha' | 'antes-despues'>('fotos');
+
+  const allPhotos = project
+    ? Array.from(
+        new Set(
+          [
+            project.heroImage,
+            ...(project.gallery || []),
+            project.detailImage,
+          ].filter(Boolean) as string[]
+        )
+      )
+    : [];
+
+  const [activePhoto, setActivePhoto] = useState<string>(project?.heroImage || '');
+
+  React.useEffect(() => {
+    if (project?.heroImage) {
+      setActivePhoto(project.heroImage);
+    }
+  }, [project?.id, project?.heroImage]);
 
   if (!project) return null;
 
@@ -47,13 +68,18 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
         <div className="px-6 border-b border-[#eeeeee] flex gap-4 bg-[#fcfcfc] shrink-0 text-xs font-bold uppercase tracking-wider">
           <button
             onClick={() => setActiveTab('fotos')}
-            className={`py-3.5 border-b-2 transition-all cursor-pointer ${
+            className={`py-3.5 border-b-2 transition-all cursor-pointer flex items-center gap-1.5 ${
               activeTab === 'fotos'
                 ? 'border-[#111111] text-[#111111]'
                 : 'border-transparent text-[#5e5e5e] hover:text-[#111111]'
             }`}
           >
-            Galería & Vista
+            <span>Galería & Vistas</span>
+            {allPhotos.length > 1 && (
+              <span className="px-1.5 py-0.5 rounded-full bg-neutral-200 text-neutral-800 text-[10px] font-extrabold">
+                {allPhotos.length}
+              </span>
+            )}
           </button>
           <button
             onClick={() => setActiveTab('ficha')}
@@ -68,13 +94,14 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
           {project.beforeImage && (
             <button
               onClick={() => setActiveTab('antes-despues')}
-              className={`py-3.5 border-b-2 transition-all cursor-pointer ${
+              className={`py-3.5 border-b-2 transition-all cursor-pointer flex items-center gap-1.5 ${
                 activeTab === 'antes-despues'
                   ? 'border-[#111111] text-[#111111]'
-                  : 'border-transparent text-[#5e5e5e] hover:text-[#111111]'
+                  : 'border-transparent text-neutral-600 hover:text-[#111111]'
               }`}
             >
-              Antes y Después
+              <ArrowLeftRight className="w-3.5 h-3.5" />
+              <span>Antes y Después</span>
             </button>
           )}
         </div>
@@ -83,16 +110,16 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
         <div className="p-6 overflow-y-auto flex-1 space-y-6">
           {activeTab === 'fotos' && (
             <div className="space-y-6">
-              {/* Hero Image */}
-              <div className="relative rounded-2xl overflow-hidden h-[340px] sm:h-[440px] bg-[#111111]">
-                <img
-                  src={project.heroImage}
+              {/* Hero / Active Image */}
+              <div className="relative rounded-2xl overflow-hidden h-[340px] sm:h-[440px] bg-[#111111] transition-all">
+                <LazyImage
+                  src={activePhoto || project.heroImage}
                   alt={project.title}
                   className="w-full h-full object-cover"
-                  referrerPolicy="no-referrer"
+                  containerClassName="w-full h-full"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-                <div className="absolute bottom-6 left-6 right-6 text-white">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none"></div>
+                <div className="absolute bottom-6 left-6 right-6 text-white z-10">
                   <span className="text-xs font-bold tracking-widest uppercase opacity-80 block mb-1">
                     {project.scope} • {project.year}
                   </span>
@@ -105,15 +132,59 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
                 </div>
               </div>
 
+              {/* Multi-Photo Thumbnails */}
+              {allPhotos.length > 1 && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#5e5e5e]">
+                      Fotografías del Proyecto ({allPhotos.length} fotos)
+                    </span>
+                    <span className="text-[11px] text-neutral-400 font-medium">
+                      Haz clic en cualquier imagen para visualizarla arriba
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+                    {allPhotos.map((photoUrl, idx) => {
+                      const isCurrent = (activePhoto || project.heroImage) === photoUrl;
+                      const isCover = photoUrl === project.heroImage;
+                      return (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => setActivePhoto(photoUrl)}
+                          className={`relative rounded-xl overflow-hidden aspect-video border-2 transition-all cursor-pointer group ${
+                            isCurrent
+                              ? 'border-black ring-2 ring-black/20 shadow-md scale-[1.02]'
+                              : 'border-transparent opacity-80 hover:opacity-100 hover:border-neutral-300'
+                          }`}
+                        >
+                          <img
+                            src={photoUrl}
+                            alt={`${project.title} foto ${idx + 1}`}
+                            className="w-full h-full object-cover"
+                            referrerPolicy="no-referrer"
+                          />
+                          {isCover && (
+                            <span className="absolute bottom-1 left-1 bg-black/80 text-white text-[9px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider backdrop-blur-xs">
+                              Portada
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               {/* Detail shots grid */}
               {project.detailImage && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="rounded-2xl overflow-hidden h-64 bg-gray-100 border border-[#e5e5e5]">
-                    <img
+                    <LazyImage
                       src={project.detailImage}
                       alt={`${project.title} detalle`}
                       className="w-full h-full object-cover"
-                      referrerPolicy="no-referrer"
+                      containerClassName="w-full h-full"
                     />
                   </div>
                   <div className="bg-[#f9f9f9] border border-[#e5e5e5] rounded-2xl p-6 flex flex-col justify-between">

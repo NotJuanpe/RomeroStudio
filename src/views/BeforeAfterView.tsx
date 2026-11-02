@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Project } from '../types';
 import { BeforeAfterSlider } from '../components/BeforeAfterSlider';
+import { LazyImage } from '../components/LazyImage';
 import { ArrowLeftRight, CheckCircle2, AlertTriangle, Sparkles, Layers, ArrowUpRight } from 'lucide-react';
 
 interface BeforeAfterViewProps {
@@ -98,13 +99,13 @@ export const BeforeAfterView: React.FC<BeforeAfterViewProps> = ({
                   {/* Before */}
                   <div className="flex flex-col gap-2">
                     <div className="relative h-80 rounded-2xl overflow-hidden bg-neutral-900 border border-[#e5e5e5]">
-                      <img
+                      <LazyImage
                         src={currentProject.beforeImage}
                         alt="Pre-Intervención"
                         className="w-full h-full object-cover filter brightness-90 contrast-105"
-                        referrerPolicy="no-referrer"
+                        containerClassName="w-full h-full"
                       />
-                      <div className="absolute top-4 left-4 bg-black/80 backdrop-blur-md px-3 py-1 rounded-md text-white text-[11px] font-extrabold uppercase tracking-wider">
+                      <div className="absolute top-4 left-4 bg-black/80 backdrop-blur-md px-3 py-1 rounded-md text-white text-[11px] font-extrabold uppercase tracking-wider z-10">
                         Pre-Intervención (Estado Inicial)
                       </div>
                     </div>
@@ -116,13 +117,13 @@ export const BeforeAfterView: React.FC<BeforeAfterViewProps> = ({
                   {/* After */}
                   <div className="flex flex-col gap-2">
                     <div className="relative h-80 rounded-2xl overflow-hidden bg-neutral-900 border border-[#e5e5e5]">
-                      <img
+                      <LazyImage
                         src={currentProject.afterImage || currentProject.heroImage}
                         alt="Post-Intervención"
                         className="w-full h-full object-cover"
-                        referrerPolicy="no-referrer"
+                        containerClassName="w-full h-full"
                       />
-                      <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-md text-[#111111] text-[11px] font-extrabold uppercase tracking-wider">
+                      <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-md text-[#111111] text-[11px] font-extrabold uppercase tracking-wider z-10">
                         Post-Intervención (Obra Terminada)
                       </div>
                     </div>

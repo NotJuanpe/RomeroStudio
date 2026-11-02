@@ -1,5 +1,6 @@
 import React from 'react';
 import { ServiceItem } from '../types';
+import { LazyImage } from '../components/LazyImage';
 import {
   CheckCircle,
   Clock,
@@ -22,28 +23,33 @@ export const ServicesView: React.FC<ServicesViewProps> = ({ services, onOpenCont
   const phases = [
     {
       num: '01',
-      title: 'Diagnóstico de Viabilidad & Programa',
-      desc: 'Análisis urbanístico, compatibilidad normativa municipal, estudio geotécnico preliminar y definición del programa de necesidades espaciales y presupuestarias.',
+      title: 'Diagnóstico & Programa',
+      desc: 'Análisis urbanístico, compatibilidad normativa municipal, estudio geotécnico preliminar y definición del programa de necesidades.',
+      image: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=600&q=80',
     },
     {
       num: '02',
-      title: 'Anteproyecto & Proyecto Ejecutivo',
-      desc: 'Diseño arquitectónico, modelado BIM 3D, cálculos estructurales, instalaciones de eficiencia energética y redacción de la memoria técnica de calidades.',
+      title: 'Anteproyecto & BIM 3D',
+      desc: 'Diseño arquitectónico, modelado BIM 3D, cálculos estructurales, instalaciones de eficiencia energética y memoria de calidades.',
+      image: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=600&q=80',
     },
     {
       num: '03',
-      title: 'Licitación & Presupuesto Cerrado',
-      desc: 'Comparativo pormenorizado de proveedores y subcontratistas. Fijación de costes unitarios y contrato de obra con plazos y penalizaciones calendarizadas.',
+      title: 'Licitación & Contrato',
+      desc: 'Comparativo pormenorizado de proveedores y subcontratistas. Fijación de costes unitarios y contrato de presupuesto cerrado.',
+      image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=600&q=80',
     },
     {
       num: '04',
-      title: 'Dirección de Obra & Certificaciones',
-      desc: 'Presencia semanal de arquitectos directores en tajo, verificación de ensayos de materiales, resolución de encuentros técnicos y emisión de certificaciones.',
+      title: 'Dirección de Obra',
+      desc: 'Presencia semanal de arquitectos directores en tajo, verificación de ensayos de materiales y emisión de certificaciones.',
+      image: 'https://images.unsplash.com/photo-1541888946425-d0fbb186c5f7?auto=format&fit=crop&w=600&q=80',
     },
     {
       num: '05',
       title: 'Recepción & Garantías',
-      desc: 'Inspección de terminaciones, tramitación de licencia de primera ocupación o final de obra, entrega del Libro del Edificio y garantía post-construcción.',
+      desc: 'Inspección de terminaciones, tramitación de final de obra, entrega del Libro del Edificio y garantía post-construcción.',
+      image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=600&q=80',
     },
   ];
 
@@ -87,15 +93,32 @@ export const ServicesView: React.FC<ServicesViewProps> = ({ services, onOpenCont
           {services.map((srv, idx) => (
             <div
               key={srv.id}
-              className="bg-white rounded-3xl p-8 sm:p-10 border border-[#e5e5e5] shadow-xs hover:shadow-md transition-shadow"
+              className="bg-white rounded-3xl overflow-hidden border border-[#e5e5e5] shadow-xs hover:shadow-md transition-shadow"
             >
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                {/* Column 1: Title & Overview */}
-                <div className="lg:col-span-5 flex flex-col justify-between">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
+                {/* Column 1: Photography & Title */}
+                <div className="lg:col-span-5 flex flex-col justify-between p-8 sm:p-10 border-b lg:border-b-0 lg:border-r border-[#eeeeee]">
                   <div>
-                    <span className="text-3xl font-extrabold text-[#111111] opacity-25 block mb-2">
-                      0{idx + 1}
-                    </span>
+                    {srv.image && (
+                      <div className="relative h-48 sm:h-56 w-full rounded-2xl overflow-hidden mb-6 bg-neutral-900 border border-[#e5e5e5]">
+                        <LazyImage
+                          src={srv.image}
+                          alt={srv.title}
+                          className="w-full h-full object-cover"
+                          containerClassName="w-full h-full"
+                        />
+                        <div className="absolute top-3 left-3 z-10 w-9 h-9 rounded-xl bg-black/75 backdrop-blur-md text-white flex items-center justify-center font-extrabold text-xs">
+                          0{idx + 1}
+                        </div>
+                      </div>
+                    )}
+
+                    {!srv.image && (
+                      <span className="text-3xl font-extrabold text-[#111111] opacity-25 block mb-2">
+                        0{idx + 1}
+                      </span>
+                    )}
+
                     <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#111111] mb-3">
                       {srv.title}
                     </h2>
@@ -111,14 +134,14 @@ export const ServicesView: React.FC<ServicesViewProps> = ({ services, onOpenCont
                 </div>
 
                 {/* Column 2: Deliverables & Specs */}
-                <div className="lg:col-span-7 bg-[#fcfcfc] p-6 sm:p-8 rounded-2xl border border-[#eeeeee] flex flex-col justify-between">
+                <div className="lg:col-span-7 bg-[#fcfcfc] p-8 sm:p-10 flex flex-col justify-between">
                   <div>
                     <h4 className="text-xs font-extrabold uppercase tracking-widest text-[#111111] mb-4">
                       Entregables & Compromisos Contractuales:
                     </h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-6">
                       {srv.deliverables.map((d, dIdx) => (
-                        <div key={dIdx} className="flex items-start gap-2.5 text-xs text-[#1a1c1c]">
+                        <div key={dIdx} className="flex items-start gap-2.5 text-xs text-[#1a1c1c] bg-white p-3 rounded-xl border border-[#eeeeee]">
                           <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                           <span className="font-medium">{d}</span>
                         </div>
@@ -162,18 +185,29 @@ export const ServicesView: React.FC<ServicesViewProps> = ({ services, onOpenCont
             {phases.map((ph) => (
               <div
                 key={ph.num}
-                className="bg-white p-6 rounded-2xl border border-[#e5e5e5] flex flex-col justify-between"
+                className="bg-white rounded-2xl border border-[#e5e5e5] overflow-hidden flex flex-col justify-between shadow-xs hover:shadow-md transition-shadow group"
               >
-                <div>
-                  <span className="text-2xl font-black text-[#111111] opacity-20 block mb-3">
+                <div className="relative h-32 w-full overflow-hidden bg-neutral-900 border-b border-[#e5e5e5]">
+                  <LazyImage
+                    src={ph.image}
+                    alt={ph.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    containerClassName="w-full h-full"
+                  />
+                  <div className="absolute top-2.5 left-2.5 z-10 w-7 h-7 rounded-lg bg-black/75 backdrop-blur-md text-white flex items-center justify-center font-extrabold text-xs">
                     {ph.num}
-                  </span>
-                  <h3 className="text-sm font-bold text-[#111111] mb-2 leading-snug">
-                    {ph.title}
-                  </h3>
-                  <p className="text-xs text-[#5e5e5e] leading-relaxed">
-                    {ph.desc}
-                  </p>
+                  </div>
+                </div>
+
+                <div className="p-5 flex-1 flex flex-col justify-between">
+                  <div>
+                    <h3 className="text-sm font-bold text-[#111111] mb-2 leading-snug">
+                      {ph.title}
+                    </h3>
+                    <p className="text-xs text-[#5e5e5e] leading-relaxed">
+                      {ph.desc}
+                    </p>
+                  </div>
                 </div>
               </div>
             ))}

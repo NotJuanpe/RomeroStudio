@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Project, ServiceItem, ContactMessage, ScreenView, SiteSettings } from '../types';
 import { BeforeAfterSlider } from '../components/BeforeAfterSlider';
+import { LazyImage } from '../components/LazyImage';
 import {
   ArrowRight,
   ArrowUpRight,
@@ -174,18 +175,18 @@ export const HomeView: React.FC<HomeViewProps> = ({
             >
               {/* Image box */}
               <div className="relative h-64 overflow-hidden bg-neutral-900">
-                <img
+                <LazyImage
                   src={project.heroImage}
                   alt={project.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  referrerPolicy="no-referrer"
+                  containerClassName="w-full h-full"
                 />
-                <div className="absolute top-4 left-4">
+                <div className="absolute top-4 left-4 z-10">
                   <span className="px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-white/90 backdrop-blur-md text-[#111111] shadow-xs">
                     {project.category}
                   </span>
                 </div>
-                <div className="absolute bottom-4 right-4">
+                <div className="absolute bottom-4 right-4 z-10">
                   <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-black/60 backdrop-blur-md text-white">
                     {project.year}
                   </span>
@@ -282,39 +283,57 @@ export const HomeView: React.FC<HomeViewProps> = ({
           {services.map((srv, idx) => (
             <div
               key={srv.id}
-              className="bg-white p-8 rounded-2xl border border-[#e5e5e5] shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between"
+              className="bg-white rounded-2xl border border-[#e5e5e5] shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between overflow-hidden"
             >
-              <div>
-                <div className="w-12 h-12 rounded-xl bg-[#f3f3f3] text-[#111111] flex items-center justify-center mb-6 font-extrabold text-lg">
-                  0{idx + 1}
+              {srv.image && (
+                <div className="relative h-48 w-full overflow-hidden bg-neutral-900 border-b border-[#e5e5e5]">
+                  <LazyImage
+                    src={srv.image}
+                    alt={srv.title}
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                    containerClassName="w-full h-full"
+                  />
+                  <div className="absolute top-4 left-4 z-10 w-9 h-9 rounded-xl bg-black/70 backdrop-blur-md text-white flex items-center justify-center font-extrabold text-xs">
+                    0{idx + 1}
+                  </div>
                 </div>
-                <h3 className="text-xl font-bold tracking-tight text-[#111111] mb-3">
-                  {srv.title}
-                </h3>
-                <p className="text-xs text-[#444748] leading-relaxed mb-6">
-                  {srv.shortDesc}
-                </p>
+              )}
 
-                <div className="space-y-2 pt-4 border-t border-[#f3f3f3]">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#5e5e5e] block mb-2">
-                    Entregables Principales:
-                  </span>
-                  {srv.deliverables.slice(0, 3).map((item, dIdx) => (
-                    <div key={dIdx} className="flex items-start gap-2 text-xs text-[#444748]">
-                      <CheckCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
-                      <span>{item}</span>
+              <div className="p-7 flex-1 flex flex-col justify-between">
+                <div>
+                  {!srv.image && (
+                    <div className="w-12 h-12 rounded-xl bg-[#f3f3f3] text-[#111111] flex items-center justify-center mb-6 font-extrabold text-lg">
+                      0{idx + 1}
                     </div>
-                  ))}
-                </div>
-              </div>
+                  )}
+                  <h3 className="text-xl font-bold tracking-tight text-[#111111] mb-2">
+                    {srv.title}
+                  </h3>
+                  <p className="text-xs text-[#444748] leading-relaxed mb-6">
+                    {srv.shortDesc}
+                  </p>
 
-              <div className="pt-6 mt-6 border-t border-[#f3f3f3]">
-                <button
-                  onClick={() => onNavigate('servicios')}
-                  className="w-full py-2.5 bg-[#f3f3f3] hover:bg-[#111111] text-[#111111] hover:text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-colors cursor-pointer text-center"
-                >
-                  Conocer Metodología
-                </button>
+                  <div className="space-y-2 pt-4 border-t border-[#f3f3f3]">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#5e5e5e] block mb-2">
+                      Entregables Principales:
+                    </span>
+                    {srv.deliverables.slice(0, 3).map((item, dIdx) => (
+                      <div key={dIdx} className="flex items-start gap-2 text-xs text-[#444748]">
+                        <CheckCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                        <span>{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="pt-6 mt-6 border-t border-[#f3f3f3]">
+                  <button
+                    onClick={() => onNavigate('servicios')}
+                    className="w-full py-2.5 bg-[#f3f3f3] hover:bg-[#111111] text-[#111111] hover:text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-colors cursor-pointer text-center"
+                  >
+                    Conocer Metodología
+                  </button>
+                </div>
               </div>
             </div>
           ))}
@@ -342,41 +361,56 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 step: '01',
                 title: 'Diagnóstico & Relevamiento',
                 desc: 'Estudio de normativa, mediciones in situ y definición del programa de necesidades con el cliente.',
+                image: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=600&q=80',
               },
               {
                 step: '02',
                 title: 'Anteproyecto & Presupuesto',
                 desc: 'Modelado 3D, definición exhaustiva de materiales y presupuesto cerrado sin costes ocultos.',
+                image: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=600&q=80',
               },
               {
                 step: '03',
                 title: 'Ejecución & Dirección',
                 desc: 'Supervisión técnica continua en obra, gestión de gremios y reportes semanales fotográficos.',
+                image: 'https://images.unsplash.com/photo-1541888946425-d0fbb186c5f7?auto=format&fit=crop&w=600&q=80',
               },
               {
                 step: '04',
                 title: 'Entrega Llave en Mano',
                 desc: 'Revisión minuciosa de terminaciones, entrega de llaves y documentación técnica para su uso.',
+                image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=600&q=80',
               },
             ].map((st) => (
               <div
                 key={st.step}
-                className="bg-[#f9f9f9] p-6 rounded-2xl border border-[#e5e5e5] relative flex flex-col justify-between"
+                className="bg-[#f9f9f9] rounded-2xl border border-[#e5e5e5] relative flex flex-col justify-between overflow-hidden shadow-xs hover:shadow-md transition-shadow group"
               >
-                <div>
-                  <span className="text-3xl font-extrabold text-[#111111] opacity-20 block mb-4">
+                <div className="relative h-36 w-full overflow-hidden bg-neutral-900 border-b border-[#e5e5e5]">
+                  <LazyImage
+                    src={st.image}
+                    alt={st.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    containerClassName="w-full h-full"
+                  />
+                  <div className="absolute top-3 left-3 z-10 w-8 h-8 rounded-lg bg-black/75 backdrop-blur-md text-white flex items-center justify-center font-extrabold text-xs">
                     {st.step}
-                  </span>
-                  <h3 className="text-base font-bold text-[#111111] mb-2">
-                    {st.title}
-                  </h3>
-                  <p className="text-xs text-[#5e5e5e] leading-relaxed">
-                    {st.desc}
-                  </p>
+                  </div>
                 </div>
-                <div className="mt-6 pt-4 border-t border-[#e5e5e5] flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700">
-                  <CheckCircle className="w-3.5 h-3.5" />
-                  <span>Control de calidad garantizado</span>
+
+                <div className="p-5 flex-1 flex flex-col justify-between">
+                  <div>
+                    <h3 className="text-sm font-bold text-[#111111] mb-1.5">
+                      {st.title}
+                    </h3>
+                    <p className="text-xs text-[#5e5e5e] leading-relaxed">
+                      {st.desc}
+                    </p>
+                  </div>
+                  <div className="mt-4 pt-3 border-t border-[#e5e5e5] flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700">
+                    <CheckCircle className="w-3.5 h-3.5 shrink-0" />
+                    <span>Control de calidad garantizado</span>
+                  </div>
                 </div>
               </div>
             ))}
@@ -384,13 +418,31 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </section>
 
-      {/* 6. CONTANOS TU IDEA (INLINE CONTACT CARD) */}
-      <section className="py-20 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-[#111111] text-white rounded-3xl p-8 sm:p-12 shadow-2xl relative overflow-hidden">
-          {/* Subtle background decoration */}
-          <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl pointer-events-none"></div>
+      {/* 6. CONTANOS TU IDEA (INLINE CONTACT CARD WITH VISUAL ARCHITECTURAL BACKDROP) */}
+      <section className="py-20 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-[#111111] text-white rounded-3xl shadow-2xl relative overflow-hidden grid grid-cols-1 lg:grid-cols-12">
+          {/* Visual column with architectural imagery */}
+          <div className="lg:col-span-5 relative min-h-[260px] lg:min-h-full overflow-hidden">
+            <LazyImage
+              src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1000&q=80"
+              alt="Estudio de Arquitectura Romero"
+              className="w-full h-full object-cover"
+              containerClassName="w-full h-full"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t lg:bg-gradient-to-r from-black/80 via-black/40 to-transparent flex flex-col justify-end p-8">
+              <span className="text-[10px] font-extrabold uppercase tracking-widest text-neutral-300 mb-1">
+                Atención Personalizada
+              </span>
+              <h3 className="text-xl font-bold text-white leading-tight">
+                Construimos proyectos que perduran en el tiempo.
+              </h3>
+              <p className="text-xs text-neutral-300 mt-2">
+                Coordiná una reunión técnica diagnóstica con nuestros arquitectos directores.
+              </p>
+            </div>
+          </div>
 
-          <div className="relative z-10 max-w-2xl">
+          <div className="lg:col-span-7 p-8 sm:p-12 relative z-10">
             <span className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-neutral-400 block mb-2">
               Contacto Directo
             </span>

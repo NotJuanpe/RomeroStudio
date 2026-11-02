@@ -8,7 +8,8 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
-  app.use(express.json());
+  app.use(express.json({ limit: '50mb' }));
+  app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
   // ==========================================
   // API ROUTES FOR CMS & FRONTEND
@@ -129,6 +130,7 @@ async function startServer() {
         materials: materials || 'Hormigón Visto, Acero, Vidrio',
         heroImage: heroImage || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
         detailImage: req.body.detailImage,
+        gallery: req.body.gallery || [],
         beforeImage: req.body.beforeImage,
         afterImage: req.body.afterImage,
         location: req.body.location || 'Buenos Aires',
