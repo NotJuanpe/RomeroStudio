@@ -56,6 +56,10 @@ export interface SiteSettings {
   heroTitle: string;
   heroSubtitle: string;
   whatsappNumber: string;
+  instagramUrl?: string;
+  linkedinUrl?: string;
+  logoUrl?: string;
+  logoInvertOnDark?: boolean;
 }
 
 export interface SiteStats {

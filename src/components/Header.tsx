@@ -9,6 +9,8 @@ interface HeaderProps {
   onOpenContact: () => void;
   unreadCount?: number;
   onReturnToLanding?: () => void;
+  logoUrl?: string;
+  logoInvertOnDark?: boolean;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -17,6 +19,8 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenContact,
   unreadCount = 3,
   onReturnToLanding,
+  logoUrl,
+  logoInvertOnDark = true,
 }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -57,6 +61,8 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Brand Logo */}
         <Logo
           variant={isHomeHero ? 'hero' : 'dark'}
+          logoUrl={logoUrl}
+          logoInvertOnDark={logoInvertOnDark}
           onClick={() => {
             if (currentView === 'inicio' && onReturnToLanding) {
               onReturnToLanding();

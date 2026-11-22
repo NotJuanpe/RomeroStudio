@@ -1,15 +1,28 @@
 import React from 'react';
-import { ScreenView } from '../types';
+import { ScreenView, SiteSettings } from '../types';
 import { Logo } from './Logo';
 import { ArrowUpRight, Mail, Phone, MapPin, Instagram, Linkedin, Lock } from 'lucide-react';
 
 interface FooterProps {
+  settings: SiteSettings;
   onNavigate: (view: ScreenView) => void;
   onOpenContact: () => void;
   onReturnToLanding?: () => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenContact, onReturnToLanding }) => {
+export const Footer: React.FC<FooterProps> = ({
+  settings,
+  onNavigate,
+  onOpenContact,
+  onReturnToLanding,
+}) => {
+  const instagramUrl = settings.instagramUrl?.trim() || 'https://www.instagram.com/romeroestudio.arq/';
+  const linkedinUrl = settings.linkedinUrl?.trim() || '';
+  const displayAddress = settings.address?.trim() || 'Buenos Aires, Argentina';
+  const displayEmail = settings.email?.trim() || 'contacto.romeroestudio@gmail.com';
+  const displayPhone = settings.phone?.trim() || '+54 9 11 3676-7925';
+  const telHref = `tel:${displayPhone.replace(/[^\d+]/g, '')}`;
+
   return (
     <footer id="app-main-footer" className="bg-[#111111] text-white pt-16 pb-12 border-t border-black">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -37,29 +50,40 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenContact, onRet
         <div className="py-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 border-b border-white/10">
           {/* Brand Info */}
           <div className="space-y-4">
-            <Logo variant="light" onClick={() => onNavigate('inicio')} />
+            <Logo
+              variant="light"
+              logoUrl={settings.logoUrl}
+              logoInvertOnDark={settings.logoInvertOnDark}
+              onClick={() => onNavigate('inicio')}
+            />
             <p className="text-xs text-neutral-400 leading-relaxed max-w-xs">
               Estudio de arquitectura técnica especializado en obra nueva, reformas integrales de alta gama y dirección técnica rigurosa.
             </p>
             <div className="flex items-center gap-3 pt-2">
-              <a
-                href="https://instagram.com"
-                target="_blank"
-                rel="noreferrer"
-                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/20 border border-white/10 flex items-center justify-center text-white/80 hover:text-white transition-colors"
-                aria-label="Instagram de Romero Estudio"
-              >
-                <Instagram className="w-4 h-4" />
-              </a>
-              <a
-                href="https://linkedin.com"
-                target="_blank"
-                rel="noreferrer"
-                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/20 border border-white/10 flex items-center justify-center text-white/80 hover:text-white transition-colors"
-                aria-label="LinkedIn de Romero Estudio"
-              >
-                <Linkedin className="w-4 h-4" />
-              </a>
+              {instagramUrl && (
+                <a
+                  href={instagramUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/20 border border-white/10 flex items-center justify-center text-white/80 hover:text-white transition-colors"
+                  aria-label="Instagram de Romero Estudio"
+                  title="Instagram de Romero Estudio"
+                >
+                  <Instagram className="w-4 h-4" />
+                </a>
+              )}
+              {linkedinUrl && (
+                <a
+                  href={linkedinUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/20 border border-white/10 flex items-center justify-center text-white/80 hover:text-white transition-colors"
+                  aria-label="LinkedIn de Romero Estudio"
+                  title="LinkedIn de Romero Estudio"
+                >
+                  <Linkedin className="w-4 h-4" />
+                </a>
+              )}
             </div>
           </div>
 
@@ -162,15 +186,25 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenContact, onRet
             <ul className="space-y-3 text-xs text-neutral-300">
               <li className="flex items-start gap-2.5">
                 <MapPin className="w-4 h-4 text-neutral-400 shrink-0 mt-0.5" />
-                <span>Buenos Aires, Argentina (Zona Norte & CABA)</span>
+                <span>{displayAddress}</span>
               </li>
               <li className="flex items-center gap-2.5">
                 <Mail className="w-4 h-4 text-neutral-400 shrink-0" />
-                <span>contacto@romeroestudio.com.ar</span>
+                <a
+                  href={`mailto:${displayEmail}`}
+                  className="hover:text-white transition-colors break-all"
+                >
+                  {displayEmail}
+                </a>
               </li>
               <li className="flex items-center gap-2.5">
                 <Phone className="w-4 h-4 text-neutral-400 shrink-0" />
-                <span>+54 9 11 4800-9200</span>
+                <a
+                  href={telHref}
+                  className="hover:text-white transition-colors"
+                >
+                  {displayPhone}
+                </a>
               </li>
             </ul>
           </div>

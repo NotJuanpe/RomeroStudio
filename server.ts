@@ -312,7 +312,7 @@ async function startServer() {
         },
         resend: {
           configured: hasResend,
-          recipient: process.env.STUDIO_NOTIFICATION_EMAIL || 'contacto@romeroestudio.com',
+          recipient: process.env.STUDIO_NOTIFICATION_EMAIL || 'contacto.romeroestudio@gmail.com',
           statusText: hasResend ? 'Despacho activo vía Resend API' : 'Modo simulado local (listo para vincular)',
         },
       });

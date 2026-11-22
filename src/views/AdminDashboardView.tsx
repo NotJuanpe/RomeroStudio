@@ -242,6 +242,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
   const [infraTab, setInfraTab] = useState<'cloudflare' | 'supabase' | 'resend'>('cloudflare');
   const [copiedSql, setCopiedSql] = useState(false);
   const [isUploadingRender, setIsUploadingRender] = useState(false);
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
 
   // Load infrastructure status
   React.useEffect(() => {
@@ -1196,20 +1197,169 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                     type="text"
                     value={settingsForm.whatsappNumber}
                     onChange={(e) => setSettingsForm({ ...settingsForm, whatsappNumber: e.target.value })}
+                    placeholder="5491136767925"
+                    className="w-full p-2.5 bg-[#f9f9f9] border border-[#e5e5e5] rounded-xl text-neutral-800 focus:border-[#111111] focus:outline-none"
+                  />
+                  <span className="text-[10px] text-neutral-500 mt-1 block">
+                    Actualiza automáticamente el botón flotante verde "WhatsApp Directo".
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block font-bold text-[#111111] mb-1">
+                    Enlace de Instagram
+                  </label>
+                  <input
+                    type="url"
+                    value={settingsForm.instagramUrl || ''}
+                    onChange={(e) => setSettingsForm({ ...settingsForm, instagramUrl: e.target.value })}
+                    placeholder="https://www.instagram.com/romeroestudio.arq/"
+                    className="w-full p-2.5 bg-[#f9f9f9] border border-[#e5e5e5] rounded-xl text-neutral-800 focus:border-[#111111] focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-[#111111] mb-1">
+                    Enlace de LinkedIn (opcional)
+                  </label>
+                  <input
+                    type="url"
+                    value={settingsForm.linkedinUrl || ''}
+                    onChange={(e) => setSettingsForm({ ...settingsForm, linkedinUrl: e.target.value })}
+                    placeholder="Dejar vacío para ocultar el ícono"
                     className="w-full p-2.5 bg-[#f9f9f9] border border-[#e5e5e5] rounded-xl text-neutral-800 focus:border-[#111111] focus:outline-none"
                   />
                 </div>
               </div>
 
-              <div className="p-4 bg-emerald-50 text-emerald-800 rounded-xl border border-emerald-200">
-                <span className="font-bold block mb-1">Persistencia Activa:</span>
-                Los cambios se guardan inmediatamente en el backend Node.js / Express mediante <code className="bg-emerald-100/80 px-1 py-0.5 rounded font-mono text-[11px]">PUT /api/settings</code>.
+              {/* LOGO DEL ESTUDIO */}
+              <div className="p-4 bg-[#f9f9f9] rounded-2xl border border-[#e5e5e5] space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <label className="block font-bold text-[#111111]">
+                      Logo Oficial del Estudio (PNG / SVG)
+                    </label>
+                    <p className="text-[11px] text-[#5e5e5e]">
+                      Subí tu archivo LOGO.png para reemplazar el logo tipográfico en la Portada, Cabecera y Pie de página.
+                    </p>
+                  </div>
+                  {settingsForm.logoUrl && (
+                    <button
+                      type="button"
+                      onClick={() => setSettingsForm({ ...settingsForm, logoUrl: '' })}
+                      className="self-start sm:self-auto px-3 py-1.5 text-[11px] font-bold text-red-600 hover:bg-red-50 rounded-lg border border-red-200 cursor-pointer transition-colors"
+                    >
+                      Quitar logo personalizado
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-2.5">
+                  <input
+                    type="text"
+                    value={settingsForm.logoUrl || ''}
+                    onChange={(e) => setSettingsForm({ ...settingsForm, logoUrl: e.target.value })}
+                    placeholder="Pegá la URL del logo o subí LOGO.png..."
+                    className="flex-1 p-2.5 bg-white border border-[#e5e5e5] rounded-xl text-neutral-800 focus:border-[#111111] focus:outline-none"
+                  />
+                  <label className="cursor-pointer px-4 py-2.5 bg-neutral-900 hover:bg-black text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-colors shrink-0">
+                    <UploadCloud className="w-4 h-4" />
+                    <span>{isUploadingLogo ? 'Subiendo...' : 'Subir LOGO.png'}</span>
+                    <input
+                      type="file"
+                      accept="image/png,image/svg+xml,image/webp,image/jpeg"
+                      className="hidden"
+                      disabled={isUploadingLogo}
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setIsUploadingLogo(true);
+                          try {
+                            const res = await api.uploadProjectImage(file, {
+                              preserveTransparency: true,
+                              maxWidth: 640,
+                              folder: 'brand',
+                            });
+                            if (res.url) {
+                              setSettingsForm((prev) => ({ ...prev, logoUrl: res.url || '' }));
+                            }
+                          } finally {
+                            setIsUploadingLogo(false);
+                            e.target.value = '';
+                          }
+                        }
+                      }}
+                    />
+                  </label>
+                </div>
+
+                {settingsForm.logoUrl && (
+                  <div className="space-y-3 pt-1">
+                    <label className="inline-flex items-center gap-2 text-[11px] font-semibold text-[#111111] cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={settingsForm.logoInvertOnDark ?? true}
+                        onChange={(e) =>
+                          setSettingsForm({ ...settingsForm, logoInvertOnDark: e.target.checked })
+                        }
+                        className="rounded border-neutral-300 accent-black"
+                      />
+                      <span>Convertir logo a blanco automáticamente sobre fondos oscuros (Footer y Hero)</span>
+                    </label>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="p-4 rounded-xl bg-white border border-[#e5e5e5] flex flex-col items-center justify-center gap-2">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                          Vista en Fondo Claro
+                        </span>
+                        <img
+                          src={settingsForm.logoUrl}
+                          alt="Vista previa claro"
+                          className="h-10 w-auto object-contain"
+                          referrerPolicy="no-referrer"
+                        />
+                      </div>
+                      <div className="p-4 rounded-xl bg-[#111111] border border-black flex flex-col items-center justify-center gap-2">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">
+                          Vista en Fondo Oscuro
+                        </span>
+                        <img
+                          src={settingsForm.logoUrl}
+                          alt="Vista previa oscuro"
+                          className={`h-10 w-auto object-contain ${
+                            (settingsForm.logoInvertOnDark ?? true) ? 'brightness-0 invert' : ''
+                          }`}
+                          referrerPolicy="no-referrer"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
+
+              {infraStatus?.supabase?.configured ? (
+                <div className="p-4 bg-emerald-50 text-emerald-800 rounded-xl border border-emerald-200">
+                  <span className="font-bold block mb-1">Sincronización Cloud Activa (Supabase):</span>
+                  Todos los cambios se guardan en PostgreSQL y se publican en vivo para todos los visitantes de la web.
+                </div>
+              ) : infraStatus?.backendReachable ? (
+                <div className="p-4 bg-emerald-50 text-emerald-800 rounded-xl border border-emerald-200">
+                  <span className="font-bold block mb-1">Persistencia Activa (Servidor Local):</span>
+                  Los cambios se guardan inmediatamente en el backend Node.js / Express mediante <code className="bg-emerald-100/80 px-1 py-0.5 rounded font-mono text-[11px]">PUT /api/settings</code>.
+                </div>
+              ) : (
+                <div className="p-4 bg-amber-50 text-amber-900 rounded-xl border border-amber-200">
+                  <span className="font-bold block mb-1">Modo Estático (Cloudflare Pages sin base de datos cloud):</span>
+                  Tus cambios se aplican inmediatamente en toda la web y se guardan en este navegador. Para que cualquier cambio desde el panel sea visible para todos los clientes desde otros dispositivos, vinculá <strong>Supabase</strong> (variables <code className="bg-amber-100 px-1 py-0.5 rounded font-mono text-[11px]">VITE_SUPABASE_URL</code> y <code className="bg-amber-100 px-1 py-0.5 rounded font-mono text-[11px]">VITE_SUPABASE_ANON_KEY</code> en Cloudflare Pages).
+                </div>
+              )}
 
               <div className="flex items-center justify-between pt-2">
                 {settingsSaved ? (
                   <span className="text-emerald-600 font-bold flex items-center gap-1">
-                    <Check className="w-4 h-4" /> ¡Ajustes actualizados en el servidor!
+                    <Check className="w-4 h-4" /> ¡Ajustes aplicados y guardados!
                   </span>
                 ) : <span></span>}
 
@@ -1472,12 +1622,12 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
 CREATE TABLE IF NOT EXISTS public.projects (
     id TEXT PRIMARY KEY,
     title TEXT NOT NULL,
-    category TEXT NOT NULL CHECK (category IN ('Residencial', 'Comercial', 'Corporativo', 'Urbanismo', 'Interiorismo')),
+    category TEXT NOT NULL CHECK (category IN ('Residencial', 'Comercial', 'Reforma', 'Corporativo', 'Urbanismo', 'Interiorismo')),
     description TEXT NOT NULL,
     location TEXT NOT NULL,
     year INTEGER NOT NULL,
     surface TEXT NOT NULL,
-    status TEXT NOT NULL CHECK (status IN ('Construido', 'En Construcción', 'En Proyecto')),
+    status TEXT NOT NULL CHECK (status IN ('En curso', 'Completado', 'En planificación', 'Construido', 'En Construcción', 'En Proyecto')),
     images TEXT[] NOT NULL DEFAULT '{}',
     architectural_details JSONB DEFAULT '{}'::jsonb,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
@@ -1516,7 +1666,7 @@ CREATE TABLE IF NOT EXISTS public.settings (
     contact_phone TEXT NOT NULL,
     office_address TEXT NOT NULL,
     hours TEXT,
-    social JSONB DEFAULT '{"instagram": "https://instagram.com"}'::jsonb,
+    social JSONB DEFAULT '{"instagram": "https://www.instagram.com/romeroestudio.arq/", "whatsapp": "5491136767925"}'::jsonb,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
@@ -1596,7 +1746,7 @@ CREATE POLICY "Subida admin renders" ON storage.objects FOR INSERT TO authentica
                       <span className="font-bold text-black block mb-1">Variable de Entorno Resend</span>
                       <div className="font-mono text-[11px] space-y-1 text-neutral-600 bg-neutral-50 p-2 rounded-lg">
                         <div>RESEND_API_KEY=re_123456789...</div>
-                        <div>STUDIO_NOTIFICATION_EMAIL=contacto@romeroestudio.com</div>
+                        <div>STUDIO_NOTIFICATION_EMAIL=contacto.romeroestudio@gmail.com</div>
                       </div>
                     </div>
 

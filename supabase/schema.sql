@@ -7,12 +7,12 @@
 CREATE TABLE IF NOT EXISTS public.projects (
     id TEXT PRIMARY KEY,
     title TEXT NOT NULL,
-    category TEXT NOT NULL CHECK (category IN ('Residencial', 'Comercial', 'Corporativo', 'Urbanismo', 'Interiorismo')),
+    category TEXT NOT NULL CHECK (category IN ('Residencial', 'Comercial', 'Reforma', 'Corporativo', 'Urbanismo', 'Interiorismo')),
     description TEXT NOT NULL,
     location TEXT NOT NULL,
     year INTEGER NOT NULL,
     surface TEXT NOT NULL,
-    status TEXT NOT NULL CHECK (status IN ('Construido', 'En Construcción', 'En Proyecto')),
+    status TEXT NOT NULL CHECK (status IN ('En curso', 'Completado', 'En planificación', 'Construido', 'En Construcción', 'En Proyecto')),
     images TEXT[] NOT NULL DEFAULT '{}',
     architectural_details JSONB DEFAULT '{}'::jsonb,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS public.settings (
     contact_phone TEXT NOT NULL,
     office_address TEXT NOT NULL,
     hours TEXT,
-    social JSONB DEFAULT '{"instagram": "https://instagram.com", "linkedin": "https://linkedin.com"}'::jsonb,
+    social JSONB DEFAULT '{"instagram": "https://www.instagram.com/romeroestudio.arq/", "linkedin": "", "whatsapp": "5491136767925", "heroTitle": "Arquitectura Integral.", "heroSubtitle": "", "logoUrl": "", "logoInvertOnDark": true}'::jsonb,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 

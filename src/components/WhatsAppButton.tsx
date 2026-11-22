@@ -1,21 +1,47 @@
-import React, { useState } from 'react';
-import { MessageCircle, X, Send, Clock, PhoneCall } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { MessageCircle, X, Send } from 'lucide-react';
 
-export const WhatsAppButton: React.FC = () => {
+interface WhatsAppButtonProps {
+  whatsappNumber?: string;
+  studioName?: string;
+}
+
+export const WhatsAppButton: React.FC<WhatsAppButtonProps> = ({
+  whatsappNumber = '5491136767925',
+  studioName = 'Romero Estudio',
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [userText, setUserText] = useState('');
+  const linkRef = useRef<HTMLAnchorElement | null>(null);
+
+  const cleanNumber = whatsappNumber.replace(/\D/g, '') || '5491136767925';
+  const defaultMsg =
+    'Hola Romero Estudio, me gustaría solicitar asesoramiento para un proyecto de arquitectura.';
+  const whatsappUrl = `https://wa.me/${cleanNumber}?text=${encodeURIComponent(
+    userText.trim() || defaultMsg
+  )}`;
 
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
-    const textToSend = userText.trim() || 'Hola Romero Estudio, me gustaría solicitar asesoramiento para un proyecto de arquitectura.';
-    const url = `https://wa.me/5491100000000?text=${encodeURIComponent(textToSend)}`;
-    window.open(url, '_blank', 'noopener,noreferrer');
+    linkRef.current?.click();
     setUserText('');
     setIsOpen(false);
   };
 
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+      {/* Hidden anchor for reliable external tab opening */}
+      <a
+        ref={linkRef}
+        href={whatsappUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="hidden"
+        aria-hidden="true"
+      >
+        WhatsApp
+      </a>
+
       {/* Interactive Chat Popup */}
       {isOpen && (
         <div
@@ -29,7 +55,9 @@ export const WhatsAppButton: React.FC = () => {
                 RE
               </div>
               <div>
-                <h4 className="text-sm font-bold tracking-wide">Romero Estudio</h4>
+                <h4 className="text-sm font-bold tracking-wide">
+                  {studioName.split('-')[0].trim() || 'Romero Estudio'}
+                </h4>
                 <p className="text-[11px] text-emerald-400 flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
                   En línea • Respuesta en &lt;15 min

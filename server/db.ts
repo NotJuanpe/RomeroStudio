@@ -12,6 +12,10 @@ export interface SiteSettings {
   heroTitle: string;
   heroSubtitle: string;
   whatsappNumber: string;
+  instagramUrl?: string;
+  linkedinUrl?: string;
+  logoUrl?: string;
+  logoInvertOnDark?: boolean;
 }
 
 export interface SiteStats {
@@ -54,12 +58,16 @@ const DEFAULT_ADMIN = {
 const DEFAULT_SETTINGS: SiteSettings = {
   studioName: 'Romero Estudio - Arquitectura Integral',
   tagline: 'Obras de Alta Gama & Gestión de Proyectos',
-  email: 'contacto@romeroestudio.com',
-  phone: '+54 9 11 4800-9200',
-  address: 'Vicente López & Recoleta, Buenos Aires',
+  email: 'contacto.romeroestudio@gmail.com',
+  phone: '+54 9 11 3676-7925',
+  address: 'Buenos Aires, Argentina',
   heroTitle: 'Arquitectura Integral.',
   heroSubtitle: 'Diseñamos y materializamos espacios singulares aunando rigor técnico, nobleza en los materiales y un control riguroso de cada etapa de obra.',
-  whatsappNumber: '5491148009200',
+  whatsappNumber: '5491136767925',
+  instagramUrl: 'https://www.instagram.com/romeroestudio.arq/',
+  linkedinUrl: '',
+  logoUrl: '',
+  logoInvertOnDark: true,
 };
 
 // In-memory cache

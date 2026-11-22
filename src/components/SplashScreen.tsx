@@ -3,9 +3,15 @@ import { Logo } from './Logo';
 
 interface LandingIntroProps {
   onEnter: () => void;
+  logoUrl?: string;
+  logoInvertOnDark?: boolean;
 }
 
-export const SplashScreen: React.FC<LandingIntroProps> = ({ onEnter }) => {
+export const SplashScreen: React.FC<LandingIntroProps> = ({
+  onEnter,
+  logoUrl,
+  logoInvertOnDark = true,
+}) => {
   const [isExiting, setIsExiting] = useState(false);
 
   const handleEnter = () => {
@@ -40,7 +46,7 @@ export const SplashScreen: React.FC<LandingIntroProps> = ({ onEnter }) => {
       <div className="flex flex-col items-center justify-center text-center px-6 transition-transform duration-300 hover:scale-[1.015]">
         {/* Custom Logo in prominent presentation */}
         <div className="p-3">
-          <Logo variant="dark" size="xl" />
+          <Logo variant="dark" size="xl" logoUrl={logoUrl} logoInvertOnDark={logoInvertOnDark} />
         </div>
 
         {/* Action Callout */}

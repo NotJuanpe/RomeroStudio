@@ -6,7 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { ScreenView, Project, ContactMessage, ServiceItem, SiteSettings, SiteStats } from './types';
 import { INITIAL_PROJECTS, INITIAL_SERVICES, INITIAL_MESSAGES } from './mockData';
-import { api } from './api';
+import { api, DEFAULT_SETTINGS, PersistenceTarget } from './api';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { WhatsAppButton } from './components/WhatsAppButton';
@@ -23,17 +23,6 @@ import { ServicesView } from './views/ServicesView';
 import { AdminDashboardView } from './views/AdminDashboardView';
 import { BrandGuidelinesView } from './views/BrandGuidelinesView';
 import { UIKitView } from './views/UIKitView';
-
-const DEFAULT_SETTINGS: SiteSettings = {
-  studioName: 'Romero Estudio - Arquitectura Integral',
-  tagline: 'Obras de Alta Gama & Gestión de Proyectos',
-  email: 'contacto@romeroestudio.com',
-  phone: '+54 9 11 4800-9200',
-  address: 'Vicente López & Recoleta, Buenos Aires',
-  heroTitle: 'Arquitectura Integral.',
-  heroSubtitle: 'Diseñamos y materializamos espacios singulares aunando rigor técnico, nobleza en los materiales y un control riguroso de cada etapa de obra.',
-  whatsappNumber: '5491148009200',
-};
 
 const getInitialView = (): ScreenView => {
   if (typeof window === 'undefined') return 'inicio';
@@ -175,44 +164,50 @@ export default function App() {
     api.recordVisit();
   }, []);
 
-  // Handlers connected to Express REST API
+  const formatPersistLabel = (target: PersistenceTarget) => {
+    if (target === 'supabase') return 'guardado en la nube (Supabase)';
+    if (target === 'server') return 'guardado en el servidor';
+    return 'guardado en este navegador (conectá Supabase para publicar cambios globales)';
+  };
+
+  // Handlers connected to persistence layer (Supabase -> Server -> LocalStorage)
   const handleAddProject = async (newProject: Project) => {
     setProjects((prev) => [newProject, ...prev]);
-    showToast(`Guardando "${newProject.title}" en el backend...`);
 
     try {
-      const created = await api.createProject(newProject);
+      const { data: created, persistedTo } = await api.createProject(newProject);
       setProjects((prev) => [created, ...prev.filter((p) => p.id !== newProject.id && p.id !== created.id)]);
-      showToast(`✓ Proyecto "${newProject.title}" persistido en el servidor.`);
+      showToast(`✓ Proyecto "${created.title}" ${formatPersistLabel(persistedTo)}.`);
       const updatedStats = await api.getStats();
       setStats(updatedStats);
     } catch (e) {
       console.error('Error creating project:', e);
-      showToast('Proyecto añadido en memoria local.');
+      showToast('Error al guardar el proyecto.');
     }
   };
 
   const handleUpdateProject = async (id: string, updates: Partial<Project>) => {
     setProjects((prev) => prev.map((p) => (p.id === id ? { ...p, ...updates } : p)));
     try {
-      await api.updateProject(id, updates);
-      showToast('✓ Cambios del proyecto guardados en el servidor.');
+      const { data: updated, persistedTo } = await api.updateProject(id, updates);
+      setProjects((prev) => prev.map((p) => (p.id === id ? updated : p)));
+      showToast(`✓ Proyecto actualizado y ${formatPersistLabel(persistedTo)}.`);
     } catch (e) {
       console.error('Error updating project:', e);
-      showToast('Proyecto actualizado localmente.');
+      showToast('Error al actualizar el proyecto.');
     }
   };
 
   const handleDeleteProject = async (projectId: string) => {
     setProjects((prev) => prev.filter((p) => p.id !== projectId));
     try {
-      await api.deleteProject(projectId);
-      showToast('✓ Proyecto eliminado de la base de datos.');
+      const { persistedTo } = await api.deleteProject(projectId);
+      showToast(`✓ Proyecto eliminado (${formatPersistLabel(persistedTo)}).`);
       const updatedStats = await api.getStats();
       setStats(updatedStats);
     } catch (e) {
       console.error('Error deleting project:', e);
-      showToast('Proyecto removido localmente.');
+      showToast('Error al eliminar el proyecto.');
     }
   };
 
@@ -225,17 +220,16 @@ export default function App() {
       status: 'Pendiente',
     };
     setMessages((prev) => [optimisticMsg, ...prev]);
-    showToast('Enviando consulta al servidor...');
 
     try {
-      const savedMsg = await api.createMessage(msgData);
+      const { data: savedMsg } = await api.createMessage(msgData);
       setMessages((prev) => [savedMsg, ...prev.filter((m) => m.id !== tempId && m.id !== savedMsg.id)]);
       showToast('✓ ¡Consulta recibida y guardada en el Panel de Gestión!');
       const updatedStats = await api.getStats();
       setStats(updatedStats);
     } catch (e) {
       console.error('Error creating message:', e);
-      showToast('Consulta registrada localmente.');
+      showToast('Consulta registrada.');
     }
   };
 
@@ -262,7 +256,7 @@ export default function App() {
     setMessages((prev) => prev.filter((m) => m.id !== msgId));
     try {
       await api.deleteMessage(msgId);
-      showToast('✓ Mensaje eliminado del servidor.');
+      showToast('✓ Mensaje eliminado.');
       const updatedStats = await api.getStats();
       setStats(updatedStats);
     } catch (e) {
@@ -273,20 +267,21 @@ export default function App() {
   const handleUpdateSettings = async (newSettings: Partial<SiteSettings>) => {
     setSettings((prev) => ({ ...prev, ...newSettings }));
     try {
-      const updated = await api.updateSettings(newSettings);
+      const { data: updated, persistedTo } = await api.updateSettings(newSettings);
       setSettings(updated);
-      showToast('✓ Parámetros institucionales actualizados en el backend.');
+      showToast(`✓ Ajustes aplicados y ${formatPersistLabel(persistedTo)}.`);
     } catch (e) {
       console.error('Error updating settings:', e);
-      showToast('Parámetros guardados localmente.');
+      showToast('Error al guardar los parámetros.');
     }
   };
 
   const handleUpdateService = async (serviceId: string, updates: Partial<ServiceItem>) => {
     setServices((prev) => prev.map((s) => (s.id === serviceId ? { ...s, ...updates } : s)));
     try {
-      await api.updateService(serviceId, updates);
-      showToast('✓ Servicio actualizado en el servidor.');
+      const { data: updated, persistedTo } = await api.updateService(serviceId, updates);
+      setServices((prev) => prev.map((s) => (s.id === serviceId ? updated : s)));
+      showToast(`✓ Servicio actualizado y ${formatPersistLabel(persistedTo)}.`);
     } catch (e) {
       console.error('Error updating service:', e);
     }
@@ -303,6 +298,8 @@ export default function App() {
       {/* Minimalist Landing Page Cover (matches user reference) */}
       {!hasEntered && (
         <SplashScreen
+          logoUrl={settings.logoUrl}
+          logoInvertOnDark={settings.logoInvertOnDark}
           onEnter={() => {
             setHasEntered(true);
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -316,6 +313,8 @@ export default function App() {
         onNavigate={handleNavigate}
         onOpenContact={() => setIsContactModalOpen(true)}
         unreadCount={unreadCount}
+        logoUrl={settings.logoUrl}
+        logoInvertOnDark={settings.logoInvertOnDark}
         onReturnToLanding={() => {
           setHasEntered(false);
           window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -426,6 +425,7 @@ export default function App() {
       {/* Global Footer (shown on public views) */}
       {currentView !== 'panel' && currentView !== 'marca' && currentView !== 'ui-kit' && (
         <Footer
+          settings={settings}
           onNavigate={handleNavigate}
           onOpenContact={() => setIsContactModalOpen(true)}
           onReturnToLanding={() => {
@@ -436,7 +436,10 @@ export default function App() {
       )}
 
       {/* Floating WhatsApp Action Button */}
-      <WhatsAppButton />
+      <WhatsAppButton
+        whatsappNumber={settings.whatsappNumber}
+        studioName={settings.studioName}
+      />
 
       {/* Project Detail Technical Datasheet Modal */}
       <ProjectDetailModal

@@ -26,7 +26,7 @@ export async function sendContactNotification(message: {
     return { sent: false, error: 'RESEND_API_KEY no configurado' };
   }
 
-  const toEmail = process.env.STUDIO_NOTIFICATION_EMAIL || 'contacto@romeroestudio.com';
+  const toEmail = process.env.STUDIO_NOTIFICATION_EMAIL || 'contacto.romeroestudio@gmail.com';
   // En cuenta de prueba de Resend se utiliza onboarding@resend.dev para entregar correos verificados
   const fromEmail = process.env.RESEND_FROM_EMAIL || 'Romero Estudio <onboarding@resend.dev>';
 
