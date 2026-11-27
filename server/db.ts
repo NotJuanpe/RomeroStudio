@@ -57,7 +57,7 @@ const DEFAULT_ADMIN = {
 
 const DEFAULT_SETTINGS: SiteSettings = {
   studioName: 'Romero Estudio - Arquitectura Integral',
-  tagline: 'Obras de Alta Gama & Gestión de Proyectos',
+  tagline: 'Arquitectura Integral & Gestión de Proyectos',
   email: 'contacto.romeroestudio@gmail.com',
   phone: '+54 9 11 3676-7925',
   address: 'Buenos Aires, Argentina',

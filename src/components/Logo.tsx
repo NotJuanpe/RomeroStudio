@@ -9,6 +9,8 @@ interface LogoProps {
   onClick?: () => void;
 }
 
+export const DEFAULT_LOGO_URL = '/assets/logo-romero-estudio.png';
+
 export const Logo: React.FC<LogoProps> = ({
   variant = 'dark',
   size = 'md',
@@ -48,7 +50,7 @@ export const Logo: React.FC<LogoProps> = ({
   };
 
   const currentSize = sizeStyles[size] || sizeStyles.md;
-  const hasCustomLogo = Boolean(logoUrl && logoUrl.trim() !== '');
+  const resolvedLogoUrl = logoUrl && logoUrl.trim() !== '' ? logoUrl.trim() : DEFAULT_LOGO_URL;
 
   return (
     <button
@@ -58,37 +60,14 @@ export const Logo: React.FC<LogoProps> = ({
       className={`inline-flex items-center select-none group text-center cursor-pointer transition-transform duration-200 active:scale-95 bg-transparent ${className}`}
       aria-label="Romero Estudio - Ir al inicio"
     >
-      {hasCustomLogo ? (
-        <img
-          src={logoUrl}
-          alt="Romero Estudio"
-          className={`w-auto object-contain transition-all duration-300 ${currentSize.img} ${
-            isLight && logoInvertOnDark ? 'brightness-0 invert' : ''
-          }`}
-          referrerPolicy="no-referrer"
-        />
-      ) : (
-        <div
-          className={`flex flex-col items-center justify-center transition-all duration-300 bg-transparent ${currentSize.container} ${
-            isLight
-              ? 'border-white text-white hover:bg-white/10'
-              : variant === 'outline'
-              ? 'border-current text-current hover:bg-black/5'
-              : 'border-[#111111] text-[#111111] hover:bg-black/5'
-          }`}
-        >
-          <span
-            className={`font-sans uppercase leading-none block select-none ${currentSize.romero}`}
-          >
-            ROMERO
-          </span>
-          <span
-            className={`font-sans uppercase leading-none block select-none ${currentSize.estudio}`}
-          >
-            ESTUDIO
-          </span>
-        </div>
-      )}
+      <img
+        src={resolvedLogoUrl}
+        alt="Romero Estudio"
+        className={`w-auto object-contain transition-all duration-300 ${currentSize.img} ${
+          isLight && logoInvertOnDark ? 'brightness-0 invert' : ''
+        }`}
+        referrerPolicy="no-referrer"
+      />
     </button>
   );
 };

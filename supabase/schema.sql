@@ -112,7 +112,7 @@ CREATE POLICY "Edición de configuración para administradores"
     WITH CHECK (true);
 
 -- ==============================================================================
--- 6. SUPABASE STORAGE (Bucket para Renders y Fotografías de Alta Gama)
+-- 6. SUPABASE STORAGE (Bucket para Renders y Fotografías de Obras)
 -- ==============================================================================
 -- Crear bucket de imágenes de proyectos
 INSERT INTO storage.buckets (id, name, public) 

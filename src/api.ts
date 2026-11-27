@@ -4,7 +4,7 @@ import { getSupabase, isSupabaseConfigured, uploadProjectImageToSupabase } from 
 
 export const DEFAULT_SETTINGS: SiteSettings = {
   studioName: 'Romero Estudio - Arquitectura Integral',
-  tagline: 'Obras de Alta Gama & Gestión de Proyectos',
+  tagline: 'Arquitectura Integral & Gestión de Proyectos',
   email: 'contacto.romeroestudio@gmail.com',
   phone: '+54 9 11 3676-7925',
   address: 'Buenos Aires, Argentina',
@@ -804,6 +804,31 @@ export const api = {
   },
 
   // Authentication
+  async verifySupabaseSession(): Promise<boolean> {
+    if (!isSupabaseConfigured()) return true;
+    const supabase = getSupabase();
+    if (!supabase) return false;
+    try {
+      const { data } = await supabase.auth.getSession();
+      return Boolean(data.session);
+    } catch {
+      return false;
+    }
+  },
+
+  async logout(): Promise<void> {
+    if (isSupabaseConfigured()) {
+      const supabase = getSupabase();
+      if (supabase) {
+        try {
+          await supabase.auth.signOut();
+        } catch (err) {
+          console.warn('Supabase signOut error:', err);
+        }
+      }
+    }
+  },
+
   async login(username: string, password: string): Promise<{ success: boolean; user?: any; error?: string }> {
     if (isSupabaseConfigured()) {
       const supabase = getSupabase();
@@ -826,11 +851,22 @@ export const api = {
                 name: data.user.user_metadata?.name || 'Director de Estudio',
                 role: 'Director de Estudio',
                 token: data.session?.access_token || 'supabase-token',
+                authProvider: 'supabase',
               },
             };
           }
-        } catch (supabaseAuthErr) {
-          console.warn('Supabase Auth error, attempting local fallback:', supabaseAuthErr);
+          return {
+            success: false,
+            error:
+              error?.message === 'Invalid login credentials'
+                ? 'Credenciales inválidas en Supabase. Verificá tu correo y contraseña (o creá el usuario en Supabase > Authentication > Users).'
+                : error?.message || 'No se pudo iniciar sesión en Supabase Auth.',
+          };
+        } catch (supabaseAuthErr: any) {
+          return {
+            success: false,
+            error: supabaseAuthErr?.message || 'Error de conexión con Supabase Auth.',
+          };
         }
       }
     }
@@ -850,7 +886,7 @@ export const api = {
       return { success: false, error: serverRes.error || 'Credenciales inválidas' };
     }
 
-    // Static hosting / offline fallback
+    // Static hosting / offline fallback (only when Supabase is not configured)
     const savedLocalPass = readLocal<string>(STORAGE_KEYS.adminPass);
     const validPasswords = savedLocalPass
       ? [savedLocalPass]
@@ -880,6 +916,19 @@ export const api = {
     currentPassword: string,
     newPassword: string
   ): Promise<{ success: boolean; error?: string }> {
+    if (isSupabaseConfigured()) {
+      const supabase = getSupabase();
+      if (supabase) {
+        try {
+          const { error } = await supabase.auth.updateUser({ password: newPassword });
+          if (!error) return { success: true };
+          return { success: false, error: error.message || 'No se pudo actualizar la contraseña en Supabase.' };
+        } catch (err: any) {
+          return { success: false, error: err?.message || 'Error al actualizar contraseña en Supabase.' };
+        }
+      }
+    }
+
     const serverRes = await fetchJson<{ success?: boolean; error?: string }>(
       '/api/auth/change-password',
       {

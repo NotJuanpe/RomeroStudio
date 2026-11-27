@@ -90,7 +90,7 @@ export const INITIAL_PROJECTS: Project[] = [
     id: 'depto-belgrano',
     title: 'Depto. Belgrano',
     category: 'Reforma',
-    description: 'Obras de Alta Gama con carpintería a medida en madera de roble natural y cocina integrada con isla monolítica.',
+    description: 'Reforma integral con carpintería a medida en madera de roble natural y cocina integrada con isla monolítica.',
     longDescription:
       'Reforma completa de ático en torre clásica de Belgrano. La planta original muy tabicada se reconfiguró mediante un eje de almacenamiento continuo en madera de roble y un bloque central de cocina con isla en cuarcita natural.',
     year: 2023,
@@ -184,7 +184,7 @@ export const INITIAL_SERVICES: ServiceItem[] = [
   {
     id: 'direccion-tecnica',
     title: 'Dirección Técnica',
-    shortDesc: 'Supervisión técnica rigurosa de obras de alta gama. Control exhaustivo para asegurar la máxima calidad constructiva.',
+    shortDesc: 'Supervisión técnica rigurosa en cada etapa de obra. Control exhaustivo para asegurar la máxima calidad constructiva.',
     fullDesc:
       'Presencia activa en obra por parte de arquitectos directores para verificar la correcta puesta en obra de materiales, encuentros singulares, aislamientos y cumplimiento de las normativas vigentes.',
     icon: 'engineering',

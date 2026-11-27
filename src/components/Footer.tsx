@@ -57,7 +57,7 @@ export const Footer: React.FC<FooterProps> = ({
               onClick={() => onNavigate('inicio')}
             />
             <p className="text-xs text-neutral-400 leading-relaxed max-w-xs">
-              Estudio de arquitectura técnica especializado en obra nueva, reformas integrales de alta gama y dirección técnica rigurosa.
+              Estudio de arquitectura técnica especializado en obra nueva, reformas integrales y dirección técnica rigurosa.
             </p>
             <div className="flex items-center gap-3 pt-2">
               {instagramUrl && (
@@ -156,7 +156,7 @@ export const Footer: React.FC<FooterProps> = ({
                   onClick={() => onNavigate('proyectos')}
                   className="hover:text-white transition-colors cursor-pointer text-left"
                 >
-                  Reformas Integrales de Alta Gama
+                  Reformas Integrales
                 </button>
               </li>
               <li>

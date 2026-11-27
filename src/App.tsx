@@ -7,6 +7,7 @@ import React, { useState, useEffect } from 'react';
 import { ScreenView, Project, ContactMessage, ServiceItem, SiteSettings, SiteStats } from './types';
 import { INITIAL_PROJECTS, INITIAL_SERVICES, INITIAL_MESSAGES } from './mockData';
 import { api, DEFAULT_SETTINGS, PersistenceTarget } from './api';
+import { isSupabaseConfigured } from './lib/supabase';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { WhatsAppButton } from './components/WhatsAppButton';
@@ -82,7 +83,8 @@ export default function App() {
     setTimeout(() => setToastText(null), 3500);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await api.logout();
     localStorage.removeItem('romero_admin_session');
     sessionStorage.removeItem('romero_admin_session');
     setAdminUser(null);
@@ -162,11 +164,25 @@ export default function App() {
   useEffect(() => {
     refreshBackendData();
     api.recordVisit();
+
+    // If Supabase is active, ensure any cached local admin session actually has a live Supabase Auth session
+    if (isSupabaseConfigured() && adminUser) {
+      api.verifySupabaseSession().then((valid) => {
+        if (!valid) {
+          localStorage.removeItem('romero_admin_session');
+          sessionStorage.removeItem('romero_admin_session');
+          setAdminUser(null);
+        }
+      });
+    }
   }, []);
 
   const formatPersistLabel = (target: PersistenceTarget) => {
     if (target === 'supabase') return 'guardado en la nube (Supabase)';
     if (target === 'server') return 'guardado en el servidor';
+    if (isSupabaseConfigured()) {
+      return 'guardado solo en este navegador (verificá tu sesión de Supabase o las políticas RLS)';
+    }
     return 'guardado en este navegador (conectá Supabase para publicar cambios globales)';
   };
 
@@ -384,6 +400,8 @@ export default function App() {
             />
           ) : (
             <AdminLoginView
+              logoUrl={settings.logoUrl}
+              logoInvertOnDark={settings.logoInvertOnDark}
               onLoginSuccess={(user) => {
                 setAdminUser(user);
                 showToast(`Bienvenido al panel, ${user.name || 'Administrador'}`);

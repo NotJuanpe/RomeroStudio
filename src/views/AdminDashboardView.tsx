@@ -278,7 +278,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
       id: `proj-${Date.now()}`,
       title: newTitle,
       category: newCategory,
-      description: newDescription || 'Proyecto de arquitectura integral de alta gama.',
+      description: newDescription || 'Proyecto de arquitectura integral.',
       year: newYear,
       area: newArea,
       scope: newScope,

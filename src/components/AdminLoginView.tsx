@@ -3,16 +3,22 @@ import { Logo } from './Logo';
 import { ScreenView } from '../types';
 import { Lock, User, Eye, EyeOff, ArrowLeft, ShieldCheck, AlertCircle, Sparkles } from 'lucide-react';
 import { api } from '../api';
+import { isSupabaseConfigured } from '../lib/supabase';
 
 interface AdminLoginViewProps {
   onLoginSuccess: (user: any) => void;
   onNavigateBack: () => void;
+  logoUrl?: string;
+  logoInvertOnDark?: boolean;
 }
 
 export const AdminLoginView: React.FC<AdminLoginViewProps> = ({
   onLoginSuccess,
   onNavigateBack,
+  logoUrl,
+  logoInvertOnDark = true,
 }) => {
+  const supabaseActive = isSupabaseConfigured();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -75,7 +81,7 @@ export const AdminLoginView: React.FC<AdminLoginViewProps> = ({
       <div className="w-full max-w-md bg-white rounded-3xl border border-[#e5e5e5] p-8 sm:p-10 shadow-xl shadow-black/5">
         {/* Logo and Brand Title */}
         <div className="text-center flex flex-col items-center">
-          <Logo variant="dark" size="lg" />
+          <Logo variant="dark" size="lg" logoUrl={logoUrl} logoInvertOnDark={logoInvertOnDark} />
           
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-100 border border-[#e5e5e5] mt-6">
             <ShieldCheck className="w-3.5 h-3.5 text-neutral-700" />
@@ -176,34 +182,36 @@ export const AdminLoginView: React.FC<AdminLoginViewProps> = ({
           </button>
         </form>
 
-        {/* Demo Credentials Helper Box */}
-        <div className="mt-8 pt-6 border-t border-[#f0f0f0]">
-          <div className="p-3.5 rounded-2xl bg-neutral-50 border border-neutral-200/80 text-[11px] text-[#5e5e5e] space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="font-bold text-[#111111] uppercase tracking-wider flex items-center gap-1.5">
-                <Sparkles className="w-3 h-3 text-neutral-700" />
-                Credenciales de Prueba:
-              </span>
-              <button
-                type="button"
-                onClick={handleFillDemoCredentials}
-                className="text-[10px] font-extrabold uppercase tracking-widest text-[#111111] hover:underline cursor-pointer bg-white px-2 py-0.5 rounded-md border border-neutral-200"
-              >
-                Autorrellenar
-              </button>
-            </div>
-            <div className="grid grid-cols-2 gap-2 pt-1 font-mono text-[10px] text-neutral-600">
-              <div>
-                <span className="block text-[9px] font-sans font-semibold text-neutral-400 uppercase">Usuario:</span>
-                admin@romeroestudio.com
+        {/* Demo Credentials Helper Box (only shown when running without Supabase Auth) */}
+        {!supabaseActive && (
+          <div className="mt-8 pt-6 border-t border-[#f0f0f0]">
+            <div className="p-3.5 rounded-2xl bg-neutral-50 border border-neutral-200/80 text-[11px] text-[#5e5e5e] space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-[#111111] uppercase tracking-wider flex items-center gap-1.5">
+                  <Sparkles className="w-3 h-3 text-neutral-700" />
+                  Credenciales de Prueba:
+                </span>
+                <button
+                  type="button"
+                  onClick={handleFillDemoCredentials}
+                  className="text-[10px] font-extrabold uppercase tracking-widest text-[#111111] hover:underline cursor-pointer bg-white px-2 py-0.5 rounded-md border border-neutral-200"
+                >
+                  Autorrellenar
+                </button>
               </div>
-              <div>
-                <span className="block text-[9px] font-sans font-semibold text-neutral-400 uppercase">Clave:</span>
-                romeroestudio
+              <div className="grid grid-cols-2 gap-2 pt-1 font-mono text-[10px] text-neutral-600">
+                <div>
+                  <span className="block text-[9px] font-sans font-semibold text-neutral-400 uppercase">Usuario:</span>
+                  admin@romeroestudio.com
+                </div>
+                <div>
+                  <span className="block text-[9px] font-sans font-semibold text-neutral-400 uppercase">Clave:</span>
+                  romeroestudio
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Footer Info */}

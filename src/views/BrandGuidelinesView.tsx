@@ -154,7 +154,7 @@ export const BrandGuidelinesView: React.FC<BrandGuidelinesViewProps> = ({ onNavi
                   Display / Titulares Principales (800 ExtraBold)
                 </span>
                 <p className="text-3xl sm:text-4xl font-extrabold text-[#111111]">
-                  Arquitectura Integral & Obras de Alta Gama
+                  Arquitectura Integral & Gestión de Proyectos
                 </p>
               </div>
 
