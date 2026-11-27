@@ -16,6 +16,12 @@ export interface SiteSettings {
   linkedinUrl?: string;
   logoUrl?: string;
   logoInvertOnDark?: boolean;
+  heroStat1Value?: string;
+  heroStat1Label?: string;
+  heroStat2Value?: string;
+  heroStat2Label?: string;
+  heroStat3Value?: string;
+  heroStat3Label?: string;
 }
 
 export interface SiteStats {
@@ -68,6 +74,12 @@ const DEFAULT_SETTINGS: SiteSettings = {
   linkedinUrl: '',
   logoUrl: '',
   logoInvertOnDark: true,
+  heroStat1Value: '7',
+  heroStat1Label: 'Años de Trayectoria',
+  heroStat2Value: '+20',
+  heroStat2Label: 'Obras Ejecutadas',
+  heroStat3Value: '100%',
+  heroStat3Label: 'Compromiso de Plazos',
 };
 
 // In-memory cache

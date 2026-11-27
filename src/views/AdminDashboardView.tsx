@@ -1025,6 +1025,74 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                   />
                 </div>
 
+                {/* Indicadores / Métricas del Hero */}
+                <div className="pt-2 border-t border-[#f3f3f3] space-y-3">
+                  <label className="block font-bold text-[#111111]">
+                    Indicadores del Hero (Métricas de Portada)
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="p-3 bg-[#f9f9f9] border border-[#e5e5e5] rounded-xl space-y-2">
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#5e5e5e] block">
+                        Indicador 1
+                      </span>
+                      <input
+                        type="text"
+                        value={settingsForm.heroStat1Value || ''}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, heroStat1Value: e.target.value })}
+                        placeholder="7"
+                        className="w-full p-2 bg-white border border-[#e5e5e5] rounded-lg text-xs font-bold text-[#111111] focus:border-[#111111] focus:outline-none"
+                      />
+                      <input
+                        type="text"
+                        value={settingsForm.heroStat1Label || ''}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, heroStat1Label: e.target.value })}
+                        placeholder="Años de Trayectoria"
+                        className="w-full p-2 bg-white border border-[#e5e5e5] rounded-lg text-xs text-[#5e5e5e] focus:border-[#111111] focus:outline-none"
+                      />
+                    </div>
+
+                    <div className="p-3 bg-[#f9f9f9] border border-[#e5e5e5] rounded-xl space-y-2">
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#5e5e5e] block">
+                        Indicador 2
+                      </span>
+                      <input
+                        type="text"
+                        value={settingsForm.heroStat2Value || ''}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, heroStat2Value: e.target.value })}
+                        placeholder="+20"
+                        className="w-full p-2 bg-white border border-[#e5e5e5] rounded-lg text-xs font-bold text-[#111111] focus:border-[#111111] focus:outline-none"
+                      />
+                      <input
+                        type="text"
+                        value={settingsForm.heroStat2Label || ''}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, heroStat2Label: e.target.value })}
+                        placeholder="Obras Ejecutadas"
+                        className="w-full p-2 bg-white border border-[#e5e5e5] rounded-lg text-xs text-[#5e5e5e] focus:border-[#111111] focus:outline-none"
+                      />
+                    </div>
+
+                    <div className="p-3 bg-[#f9f9f9] border border-[#e5e5e5] rounded-xl space-y-2">
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#5e5e5e] block">
+                        Indicador 3
+                      </span>
+                      <input
+                        type="text"
+                        value={settingsForm.heroStat3Value || ''}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, heroStat3Value: e.target.value })}
+                        placeholder="100%"
+                        className="w-full p-2 bg-white border border-[#e5e5e5] rounded-lg text-xs font-bold text-[#111111] focus:border-[#111111] focus:outline-none"
+                      />
+                      <input
+                        type="text"
+                        value={settingsForm.heroStat3Label || ''}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, heroStat3Label: e.target.value })}
+                        placeholder="Compromiso de Plazos"
+                        className="w-full p-2 bg-white border border-[#e5e5e5] rounded-lg text-xs text-[#5e5e5e] focus:border-[#111111] focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+
                 <div className="flex items-center justify-between pt-2">
                   {settingsSaved ? (
                     <span className="text-emerald-600 font-bold flex items-center gap-1">

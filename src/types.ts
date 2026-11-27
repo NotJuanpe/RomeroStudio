@@ -60,6 +60,12 @@ export interface SiteSettings {
   linkedinUrl?: string;
   logoUrl?: string;
   logoInvertOnDark?: boolean;
+  heroStat1Value?: string;
+  heroStat1Label?: string;
+  heroStat2Value?: string;
+  heroStat2Label?: string;
+  heroStat3Value?: string;
+  heroStat3Label?: string;
 }
 
 export interface SiteStats {

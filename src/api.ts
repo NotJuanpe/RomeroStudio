@@ -16,6 +16,12 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   linkedinUrl: '',
   logoUrl: '',
   logoInvertOnDark: true,
+  heroStat1Value: '7',
+  heroStat1Label: 'Años de Trayectoria',
+  heroStat2Value: '+20',
+  heroStat2Label: 'Obras Ejecutadas',
+  heroStat3Value: '100%',
+  heroStat3Label: 'Compromiso de Plazos',
 };
 
 export type PersistenceTarget = 'supabase' | 'server' | 'local';
@@ -202,6 +208,12 @@ function mapSupabaseSettings(row: any): SiteSettings {
     linkedinUrl: social.linkedin ?? DEFAULT_SETTINGS.linkedinUrl,
     logoUrl: social.logoUrl ?? DEFAULT_SETTINGS.logoUrl,
     logoInvertOnDark: social.logoInvertOnDark ?? DEFAULT_SETTINGS.logoInvertOnDark,
+    heroStat1Value: social.heroStat1Value || DEFAULT_SETTINGS.heroStat1Value,
+    heroStat1Label: social.heroStat1Label || DEFAULT_SETTINGS.heroStat1Label,
+    heroStat2Value: social.heroStat2Value || DEFAULT_SETTINGS.heroStat2Value,
+    heroStat2Label: social.heroStat2Label || DEFAULT_SETTINGS.heroStat2Label,
+    heroStat3Value: social.heroStat3Value || DEFAULT_SETTINGS.heroStat3Value,
+    heroStat3Label: social.heroStat3Label || DEFAULT_SETTINGS.heroStat3Label,
   };
 }
 
@@ -776,6 +788,12 @@ export const api = {
               heroSubtitle: merged.heroSubtitle || '',
               logoUrl: merged.logoUrl || '',
               logoInvertOnDark: merged.logoInvertOnDark ?? true,
+              heroStat1Value: merged.heroStat1Value || DEFAULT_SETTINGS.heroStat1Value,
+              heroStat1Label: merged.heroStat1Label || DEFAULT_SETTINGS.heroStat1Label,
+              heroStat2Value: merged.heroStat2Value || DEFAULT_SETTINGS.heroStat2Value,
+              heroStat2Label: merged.heroStat2Label || DEFAULT_SETTINGS.heroStat2Label,
+              heroStat3Value: merged.heroStat3Value || DEFAULT_SETTINGS.heroStat3Value,
+              heroStat3Label: merged.heroStat3Label || DEFAULT_SETTINGS.heroStat3Label,
             },
             updated_at: new Date().toISOString(),
           });

@@ -117,26 +117,26 @@ export const HomeView: React.FC<HomeViewProps> = ({
           <div className="mt-16 pt-10 border-t border-white/15 w-full grid grid-cols-2 sm:grid-cols-3 gap-6 text-left">
             <div>
               <span className="block text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-                15+
+                {settings?.heroStat1Value || '7'}
               </span>
               <span className="block text-xs uppercase tracking-wider text-neutral-400 mt-0.5">
-                Años de Trayectoria
+                {settings?.heroStat1Label || 'Años de Trayectoria'}
               </span>
             </div>
             <div>
               <span className="block text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-                40+
+                {settings?.heroStat2Value || '+20'}
               </span>
               <span className="block text-xs uppercase tracking-wider text-neutral-400 mt-0.5">
-                Obras Ejecutadas
+                {settings?.heroStat2Label || 'Obras Ejecutadas'}
               </span>
             </div>
             <div className="col-span-2 sm:col-span-1">
               <span className="block text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-                100%
+                {settings?.heroStat3Value || '100%'}
               </span>
               <span className="block text-xs uppercase tracking-wider text-neutral-400 mt-0.5">
-                Compromiso de Plazos
+                {settings?.heroStat3Label || 'Compromiso de Plazos'}
               </span>
             </div>
           </div>
