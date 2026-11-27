@@ -98,7 +98,7 @@ export const BeforeAfterView: React.FC<BeforeAfterViewProps> = ({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Before */}
                   <div className="flex flex-col gap-2">
-                    <div className="relative h-80 sm:h-96 rounded-2xl overflow-hidden bg-[#141414] border border-[#e5e5e5]">
+                    <div className="relative h-80 sm:h-96 rounded-2xl overflow-hidden bg-white border border-[#e5e5e5]">
                       <LazyImage
                         src={currentProject.beforeImage}
                         alt="Pre-Intervención"
@@ -116,7 +116,7 @@ export const BeforeAfterView: React.FC<BeforeAfterViewProps> = ({
 
                   {/* After */}
                   <div className="flex flex-col gap-2">
-                    <div className="relative h-80 sm:h-96 rounded-2xl overflow-hidden bg-[#141414] border border-[#e5e5e5]">
+                    <div className="relative h-80 sm:h-96 rounded-2xl overflow-hidden bg-white border border-[#e5e5e5]">
                       <LazyImage
                         src={currentProject.afterImage || currentProject.heroImage}
                         alt="Post-Intervención"

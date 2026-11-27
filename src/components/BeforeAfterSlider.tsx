@@ -70,11 +70,11 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
   return (
     <div className={`flex flex-col gap-3 ${className}`}>
       {/* Slider Visual Container — auto-sizes to image aspect ratio */}
-      <div className="w-full flex justify-center bg-[#141414] rounded-2xl overflow-hidden border border-[#e5e5e5] shadow-lg">
+      <div className="w-full flex justify-center bg-white rounded-2xl overflow-hidden border border-[#e5e5e5] shadow-sm">
         <div
           ref={containerRef}
           id="before-after-interactive-container"
-          className={`relative w-full ${heightClass} select-none cursor-ew-resize bg-[#141414] overflow-hidden`}
+          className={`relative w-full ${heightClass} select-none cursor-ew-resize bg-white overflow-hidden`}
           style={{
             aspectRatio: `${clampedRatio}`,
             maxWidth: isPortrait ? `calc(540px * ${clampedRatio})` : '100%',
