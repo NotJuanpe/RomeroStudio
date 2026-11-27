@@ -92,17 +92,17 @@ export const BeforeAfterView: React.FC<BeforeAfterViewProps> = ({
                   afterImage={currentProject.afterImage || currentProject.heroImage}
                   title={currentProject.title}
                   subtitle="Arrastrá la barra central o hacé clic para comparar los estados"
-                  heightClass="h-[400px] sm:h-[540px]"
+                  heightClass="max-h-[540px]"
                 />
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Before */}
                   <div className="flex flex-col gap-2">
-                    <div className="relative h-80 rounded-2xl overflow-hidden bg-neutral-900 border border-[#e5e5e5]">
+                    <div className="relative h-80 sm:h-96 rounded-2xl overflow-hidden bg-[#141414] border border-[#e5e5e5]">
                       <LazyImage
                         src={currentProject.beforeImage}
                         alt="Pre-Intervención"
-                        className="w-full h-full object-cover filter brightness-90 contrast-105"
+                        className="w-full h-full object-contain filter brightness-95 contrast-105"
                         containerClassName="w-full h-full"
                       />
                       <div className="absolute top-4 left-4 bg-black/80 backdrop-blur-md px-3 py-1 rounded-md text-white text-[11px] font-extrabold uppercase tracking-wider z-10">
@@ -116,11 +116,11 @@ export const BeforeAfterView: React.FC<BeforeAfterViewProps> = ({
 
                   {/* After */}
                   <div className="flex flex-col gap-2">
-                    <div className="relative h-80 rounded-2xl overflow-hidden bg-neutral-900 border border-[#e5e5e5]">
+                    <div className="relative h-80 sm:h-96 rounded-2xl overflow-hidden bg-[#141414] border border-[#e5e5e5]">
                       <LazyImage
                         src={currentProject.afterImage || currentProject.heroImage}
                         alt="Post-Intervención"
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain"
                         containerClassName="w-full h-full"
                       />
                       <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-md text-[#111111] text-[11px] font-extrabold uppercase tracking-wider z-10">
@@ -182,7 +182,7 @@ export const BeforeAfterView: React.FC<BeforeAfterViewProps> = ({
                   onClick={() => onSelectProject(currentProject)}
                   className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#111111] hover:underline cursor-pointer"
                 >
-                  <span>Ver Ficha Técnica Completa de {currentProject.title}</span>
+                  <span>Ver Galería Completa de {currentProject.title}</span>
                   <ArrowUpRight className="w-4 h-4" />
                 </button>
 

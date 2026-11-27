@@ -15,7 +15,7 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
   onClose,
   onInquireProject,
 }) => {
-  const [activeTab, setActiveTab] = useState<'fotos' | 'ficha' | 'antes-despues'>('fotos');
+  const [activeTab, setActiveTab] = useState<'fotos' | 'antes-despues'>('fotos');
 
   const allPhotos = project
     ? Array.from(
@@ -32,6 +32,7 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
   const [activePhoto, setActivePhoto] = useState<string>(project?.heroImage || '');
 
   React.useEffect(() => {
+    setActiveTab('fotos');
     if (project?.heroImage) {
       setActivePhoto(project.heroImage);
     }
@@ -81,16 +82,6 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
               </span>
             )}
           </button>
-          <button
-            onClick={() => setActiveTab('ficha')}
-            className={`py-3.5 border-b-2 transition-all cursor-pointer ${
-              activeTab === 'ficha'
-                ? 'border-[#111111] text-[#111111]'
-                : 'border-transparent text-[#5e5e5e] hover:text-[#111111]'
-            }`}
-          >
-            Ficha Técnica & Memoria
-          </button>
           {project.beforeImage && (
             <button
               onClick={() => setActiveTab('antes-despues')}
@@ -110,6 +101,42 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
         <div className="p-6 overflow-y-auto flex-1 space-y-6">
           {activeTab === 'fotos' && (
             <div className="space-y-6">
+              {/* Key Project Summary Cards */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="p-3.5 bg-[#f9f9f9] border border-[#e5e5e5] rounded-xl">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#5e5e5e] block">
+                    Superficie
+                  </span>
+                  <span className="text-base sm:text-lg font-bold text-[#111111] block mt-0.5">
+                    {project.area}
+                  </span>
+                </div>
+                <div className="p-3.5 bg-[#f9f9f9] border border-[#e5e5e5] rounded-xl">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#5e5e5e] block">
+                    Año de Ejecución
+                  </span>
+                  <span className="text-base sm:text-lg font-bold text-[#111111] block mt-0.5">
+                    {project.year}
+                  </span>
+                </div>
+                <div className="p-3.5 bg-[#f9f9f9] border border-[#e5e5e5] rounded-xl">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#5e5e5e] block">
+                    Alcance
+                  </span>
+                  <span className="text-base sm:text-lg font-bold text-[#111111] block mt-0.5">
+                    {project.scope}
+                  </span>
+                </div>
+                <div className="p-3.5 bg-[#f9f9f9] border border-[#e5e5e5] rounded-xl">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#5e5e5e] block">
+                    Estado
+                  </span>
+                  <span className="text-base sm:text-lg font-bold text-emerald-700 block mt-0.5">
+                    {project.status}
+                  </span>
+                </div>
+              </div>
+
               {/* Hero / Active Image */}
               <div className="relative rounded-2xl overflow-hidden h-[340px] sm:h-[440px] bg-[#111111] transition-all">
                 <LazyImage
@@ -216,76 +243,6 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
             </div>
           )}
 
-          {activeTab === 'ficha' && (
-            <div className="space-y-6">
-              {/* Technical Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="p-4 bg-[#f9f9f9] border border-[#e5e5e5] rounded-xl">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#5e5e5e] block">
-                    Superficie
-                  </span>
-                  <span className="text-lg font-bold text-[#111111] block mt-1">
-                    {project.area}
-                  </span>
-                </div>
-                <div className="p-4 bg-[#f9f9f9] border border-[#e5e5e5] rounded-xl">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#5e5e5e] block">
-                    Año de Ejecución
-                  </span>
-                  <span className="text-lg font-bold text-[#111111] block mt-1">
-                    {project.year}
-                  </span>
-                </div>
-                <div className="p-4 bg-[#f9f9f9] border border-[#e5e5e5] rounded-xl">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#5e5e5e] block">
-                    Alcance
-                  </span>
-                  <span className="text-lg font-bold text-[#111111] block mt-1">
-                    {project.scope}
-                  </span>
-                </div>
-                <div className="p-4 bg-[#f9f9f9] border border-[#e5e5e5] rounded-xl">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#5e5e5e] block">
-                    Estado
-                  </span>
-                  <span className="text-lg font-bold text-emerald-700 block mt-1">
-                    {project.status}
-                  </span>
-                </div>
-              </div>
-
-              {/* Memoria Descriptiva */}
-              <div className="p-6 bg-[#f9f9f9] border border-[#e5e5e5] rounded-2xl">
-                <h4 className="text-sm font-bold uppercase tracking-wider text-[#111111] mb-3">
-                  Memoria Descriptiva del Proyecto
-                </h4>
-                <p className="text-sm text-[#444748] leading-relaxed">
-                  {project.longDescription || project.description}
-                </p>
-              </div>
-
-              {/* Materials & Specific Specs */}
-              <div className="p-6 bg-[#f9f9f9] border border-[#e5e5e5] rounded-2xl">
-                <h4 className="text-sm font-bold uppercase tracking-wider text-[#111111] mb-3">
-                  Especificaciones Constructivas & Materialidad
-                </h4>
-                <div className="space-y-2.5 text-sm">
-                  <div className="flex justify-between py-2 border-b border-[#e5e5e5]">
-                    <span className="text-[#5e5e5e] font-medium">Materiales Principales:</span>
-                    <span className="font-semibold text-[#111111] text-right">{project.materials}</span>
-                  </div>
-                  {project.specs &&
-                    Object.entries(project.specs).map(([key, val]) => (
-                      <div key={key} className="flex justify-between py-2 border-b border-[#e5e5e5]">
-                        <span className="text-[#5e5e5e] font-medium">{key}:</span>
-                        <span className="font-semibold text-[#111111] text-right">{val}</span>
-                      </div>
-                    ))}
-                </div>
-              </div>
-            </div>
-          )}
-
           {activeTab === 'antes-despues' && project.beforeImage && (
             <div className="space-y-4">
               <BeforeAfterSlider
@@ -293,7 +250,7 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
                 afterImage={project.afterImage || project.heroImage}
                 title={`Transformación de ${project.title}`}
                 subtitle="Deslizá el cursor o tocá para comparar el estado previo y la obra finalizada"
-                heightClass="h-[380px] sm:h-[460px]"
+                heightClass="max-h-[480px]"
               />
               <div className="p-4 bg-[#f9f9f9] rounded-xl border border-[#e5e5e5] text-xs text-[#5e5e5e]">
                 <p className="leading-relaxed">

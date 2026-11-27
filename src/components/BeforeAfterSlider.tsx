@@ -1,5 +1,5 @@
-import React, { useState, useRef, useCallback } from 'react';
-import { ArrowLeftRight, Check, Eye } from 'lucide-react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
+import { ArrowLeftRight, Eye } from 'lucide-react';
 
 interface BeforeAfterSliderProps {
   beforeImage: string;
@@ -14,14 +14,34 @@ interface BeforeAfterSliderProps {
 export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
   beforeImage,
   afterImage,
-  title = 'Transformación Arquitectónica',
   subtitle = 'Arrastra el control para comparar el estado previo con el resultado final',
   className = '',
-  heightClass = 'h-[360px] sm:h-[480px]',
+  heightClass = 'max-h-[540px]',
 }) => {
   const [sliderPosition, setSliderPosition] = useState(50);
   const [isDragging, setIsDragging] = useState(false);
+  const [afterRatio, setAfterRatio] = useState<number | null>(null);
+  const [beforeRatio, setBeforeRatio] = useState<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setAfterRatio(null);
+    setBeforeRatio(null);
+  }, [beforeImage, afterImage]);
+
+  // Automatically adapt container aspect ratio to the uploaded photos
+  const detectedRatio = afterRatio || beforeRatio;
+  const clampedRatio = detectedRatio
+    ? Math.min(Math.max(detectedRatio, 0.56), 1.9)
+    : 16 / 10;
+  const isPortrait = clampedRatio < 0.95;
+  const ratiosDiffer =
+    afterRatio !== null &&
+    beforeRatio !== null &&
+    Math.abs(afterRatio - beforeRatio) > 0.12;
+  // When both photos share a similar aspect ratio, fill the matched frame cleanly;
+  // when their resolutions/aspect ratios differ, use object-contain so neither gets cropped.
+  const imgFitClass = ratiosDiffer ? 'object-contain' : 'object-cover';
 
   const handleMove = useCallback((clientX: number) => {
     if (!containerRef.current) return;
@@ -49,65 +69,80 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
 
   return (
     <div className={`flex flex-col gap-3 ${className}`}>
-      {/* Slider Visual Container */}
-      <div
-        ref={containerRef}
-        id="before-after-interactive-container"
-        className={`relative w-full ${heightClass} rounded-2xl overflow-hidden select-none cursor-ew-resize bg-[#1a1c1c] shadow-lg border border-[#e5e5e5]`}
-        onMouseDown={() => setIsDragging(true)}
-        onMouseUp={() => setIsDragging(false)}
-        onMouseLeave={() => setIsDragging(false)}
-        onMouseMove={handleMouseMove}
-        onTouchMove={handleTouchMove}
-        onClick={(e) => handleMove(e.clientX)}
-      >
-        {/* After Image (Background - Full Width) */}
-        <img
-          src={afterImage}
-          alt="Post-Intervención"
-          className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-          referrerPolicy="no-referrer"
-        />
-
-        {/* Before Image (Foreground - Clipped with inline style) */}
+      {/* Slider Visual Container — auto-sizes to image aspect ratio */}
+      <div className="w-full flex justify-center bg-[#141414] rounded-2xl overflow-hidden border border-[#e5e5e5] shadow-lg">
         <div
-          className="absolute inset-0 overflow-hidden pointer-events-none"
-          style={{ width: `${sliderPosition}%` }}
+          ref={containerRef}
+          id="before-after-interactive-container"
+          className={`relative w-full ${heightClass} select-none cursor-ew-resize bg-[#141414] overflow-hidden`}
+          style={{
+            aspectRatio: `${clampedRatio}`,
+            maxWidth: isPortrait ? `calc(540px * ${clampedRatio})` : '100%',
+          }}
+          onMouseDown={() => setIsDragging(true)}
+          onMouseUp={() => setIsDragging(false)}
+          onMouseLeave={() => setIsDragging(false)}
+          onMouseMove={handleMouseMove}
+          onTouchMove={handleTouchMove}
+          onClick={(e) => handleMove(e.clientX)}
         >
+          {/* After Image (Background - Full Frame) */}
           <img
-            src={beforeImage}
-            alt="Pre-Intervención"
-            className="absolute inset-0 w-full h-full object-cover max-w-none pointer-events-none filter brightness-90 contrast-105"
-            style={{
-              width: containerRef.current ? `${containerRef.current.clientWidth}px` : '100vw',
+            src={afterImage}
+            alt="Post-Intervención"
+            onLoad={(e) => {
+              const img = e.currentTarget;
+              if (img.naturalWidth && img.naturalHeight) {
+                setAfterRatio(img.naturalWidth / img.naturalHeight);
+              }
             }}
+            className={`absolute inset-0 w-full h-full ${imgFitClass} object-center pointer-events-none`}
             referrerPolicy="no-referrer"
           />
-          {/* Subtle darken overlay on before state */}
-          <div className="absolute inset-0 bg-black/10"></div>
-        </div>
 
-        {/* Split Divider Bar */}
-        <div
-          className="absolute top-0 bottom-0 w-0.5 bg-white shadow-[0_0_10px_rgba(0,0,0,0.5)] z-20 pointer-events-none"
-          style={{ left: `${sliderPosition}%` }}
-        >
-          {/* Draggable Circle Handle */}
-          <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-9 h-9 bg-white text-[#111111] rounded-full shadow-xl flex items-center justify-center border-2 border-[#111111] transition-transform active:scale-110">
-            <ArrowLeftRight className="w-4 h-4" />
+          {/* Before Image (Foreground - Exact pixel-aligned clip-path) */}
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
+          >
+            <img
+              src={beforeImage}
+              alt="Pre-Intervención"
+              onLoad={(e) => {
+                const img = e.currentTarget;
+                if (img.naturalWidth && img.naturalHeight) {
+                  setBeforeRatio(img.naturalWidth / img.naturalHeight);
+                }
+              }}
+              className={`absolute inset-0 w-full h-full ${imgFitClass} object-center pointer-events-none filter brightness-95 contrast-105`}
+              referrerPolicy="no-referrer"
+            />
+            {/* Subtle darken overlay on before state */}
+            <div className="absolute inset-0 bg-black/10"></div>
           </div>
-        </div>
 
-        {/* Badges: Pre vs Post */}
-        <div className="absolute top-4 left-4 z-30 pointer-events-none">
-          <span className="px-2.5 py-1 rounded-md text-[11px] font-extrabold uppercase tracking-wider bg-black/70 backdrop-blur-md text-white border border-white/20">
-            Pre-Intervención
-          </span>
-        </div>
-        <div className="absolute top-4 right-4 z-30 pointer-events-none">
-          <span className="px-2.5 py-1 rounded-md text-[11px] font-extrabold uppercase tracking-wider bg-white/90 backdrop-blur-md text-[#111111] border border-black/10 shadow-sm">
-            Post-Intervención
-          </span>
+          {/* Split Divider Bar */}
+          <div
+            className="absolute top-0 bottom-0 w-0.5 bg-white shadow-[0_0_10px_rgba(0,0,0,0.5)] z-20 pointer-events-none"
+            style={{ left: `${sliderPosition}%` }}
+          >
+            {/* Draggable Circle Handle */}
+            <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-9 h-9 bg-white text-[#111111] rounded-full shadow-xl flex items-center justify-center border-2 border-[#111111] transition-transform active:scale-110">
+              <ArrowLeftRight className="w-4 h-4" />
+            </div>
+          </div>
+
+          {/* Badges: Pre vs Post */}
+          <div className="absolute top-4 left-4 z-30 pointer-events-none">
+            <span className="px-2.5 py-1 rounded-md text-[11px] font-extrabold uppercase tracking-wider bg-black/70 backdrop-blur-md text-white border border-white/20">
+              Pre-Intervención
+            </span>
+          </div>
+          <div className="absolute top-4 right-4 z-30 pointer-events-none">
+            <span className="px-2.5 py-1 rounded-md text-[11px] font-extrabold uppercase tracking-wider bg-white/90 backdrop-blur-md text-[#111111] border border-black/10 shadow-sm">
+              Post-Intervención
+            </span>
+          </div>
         </div>
       </div>
 
