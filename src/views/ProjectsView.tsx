@@ -157,7 +157,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                       onClick={() => onSelectProject(casaDelOlmo)}
                       className="w-full py-3 bg-[#111111] hover:bg-black text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 shadow-xs active:scale-98"
                     >
-                      <span>Ver Ficha Técnica Completa</span>
+                      <span>Ver Galería Completa</span>
                       <ArrowUpRight className="w-4 h-4" />
                     </button>
                   </div>
@@ -369,7 +369,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                       onClick={() => onSelectProject(estudioNorte)}
                       className="w-full py-3 bg-[#111111] hover:bg-black text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 shadow-xs active:scale-98"
                     >
-                      <span>Ver Ficha Técnica Completa</span>
+                      <span>Ver Galería Completa</span>
                       <ArrowUpRight className="w-4 h-4" />
                     </button>
                   </div>

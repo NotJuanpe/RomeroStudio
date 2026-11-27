@@ -209,7 +209,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 </div>
 
                 <div className="mt-6 pt-4 border-t border-[#f3f3f3] flex items-center justify-between text-xs font-bold text-[#111111]">
-                  <span>Ver Ficha Técnica</span>
+                  <span>Ver Galería</span>
                   <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                 </div>
               </div>

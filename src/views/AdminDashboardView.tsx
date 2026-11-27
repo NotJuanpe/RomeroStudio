@@ -720,7 +720,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                             <button
                               onClick={() => onSelectProject(proj)}
                               className="p-1.5 text-[#5e5e5e] hover:text-black hover:bg-[#f3f3f3] rounded-lg transition-colors cursor-pointer"
-                              title="Ver Ficha Técnica"
+                              title="Ver Galería del Proyecto"
                             >
                               <Eye className="w-4 h-4" />
                             </button>
