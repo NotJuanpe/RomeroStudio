@@ -47,6 +47,13 @@ export interface ContactMessage {
   status: 'Pendiente' | 'Respondido';
 }
 
+export interface ProcessStep {
+  step: string;
+  title: string;
+  desc: string;
+  image?: string;
+}
+
 export interface SiteSettings {
   studioName: string;
   tagline: string;
@@ -55,6 +62,7 @@ export interface SiteSettings {
   address: string;
   heroTitle: string;
   heroSubtitle: string;
+  heroImageUrl?: string;
   whatsappNumber: string;
   instagramUrl?: string;
   linkedinUrl?: string;
@@ -66,6 +74,15 @@ export interface SiteSettings {
   heroStat2Label?: string;
   heroStat3Value?: string;
   heroStat3Label?: string;
+  processTitle?: string;
+  processSubtitle?: string;
+  processSteps?: ProcessStep[];
+  contactCardTitle?: string;
+  contactCardSubtitle?: string;
+  contactCardImageUrl?: string;
+  footerCtaTitle?: string;
+  footerDescription?: string;
+  footerSpecialties?: string[];
 }
 
 export interface SiteStats {

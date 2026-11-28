@@ -72,11 +72,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
         id="hero-section"
         className="relative min-h-[90vh] lg:min-h-screen flex items-center justify-center bg-[#111111] text-white overflow-hidden pt-24 pb-16"
       >
-        {/* Background photo from client's own uploaded projects (no stock fallback) */}
-        {projects[0]?.heroImage && (
+        {/* Background photo from custom Hero image or client's own uploaded projects */}
+        {(settings?.heroImageUrl || projects[0]?.heroImage) && (
           <img
-            src={projects[0].heroImage}
-            alt={projects[0].title || 'Romero Estudio Arquitectura'}
+            src={settings?.heroImageUrl || projects[0].heroImage}
+            alt={settings?.heroTitle || projects[0]?.title || 'Romero Estudio Arquitectura'}
             className="absolute inset-0 w-full h-full object-cover object-center opacity-40 scale-105 transition-transform duration-1000 ease-out"
             referrerPolicy="no-referrer"
           />
@@ -350,54 +350,79 @@ export const HomeView: React.FC<HomeViewProps> = ({
               Flujo Constructivo
             </span>
             <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#111111]">
-              Un Proceso Sin Estrés
+              {settings?.processTitle || 'Un Proceso Sin Estrés'}
             </h2>
             <p className="text-sm text-[#444748] mt-2">
-              Transformamos la complejidad de una obra en un cronograma claro, transparente y predecible.
+              {settings?.processSubtitle || 'Transformamos la complejidad de una obra en un cronograma claro, transparente y predecible.'}
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              {
-                step: '01',
-                title: 'Diagnóstico & Relevamiento',
-                desc: 'Estudio de normativa, mediciones in situ y definición del programa de necesidades con el cliente.',
-              },
-              {
-                step: '02',
-                title: 'Anteproyecto & Presupuesto',
-                desc: 'Modelado 3D, definición exhaustiva de materiales y presupuesto cerrado sin costes ocultos.',
-              },
-              {
-                step: '03',
-                title: 'Ejecución & Dirección',
-                desc: 'Supervisión técnica continua en obra, gestión de gremios y reportes semanales fotográficos.',
-              },
-              {
-                step: '04',
-                title: 'Entrega Llave en Mano',
-                desc: 'Revisión minuciosa de terminaciones, entrega de llaves y documentación técnica para su uso.',
-              },
-            ].map((st) => (
+            {(settings?.processSteps && settings.processSteps.length > 0
+              ? settings.processSteps
+              : [
+                  {
+                    step: '01',
+                    title: 'Diagnóstico & Relevamiento',
+                    desc: 'Estudio de normativa, mediciones in situ y definición del programa de necesidades con el cliente.',
+                    image: '',
+                  },
+                  {
+                    step: '02',
+                    title: 'Anteproyecto & Presupuesto',
+                    desc: 'Modelado 3D, definición exhaustiva de materiales y presupuesto cerrado sin costes ocultos.',
+                    image: '',
+                  },
+                  {
+                    step: '03',
+                    title: 'Ejecución & Dirección',
+                    desc: 'Supervisión técnica continua en obra, gestión de gremios y reportes semanales fotográficos.',
+                    image: '',
+                  },
+                  {
+                    step: '04',
+                    title: 'Entrega Llave en Mano',
+                    desc: 'Revisión minuciosa de terminaciones, entrega de llaves y documentación técnica para su uso.',
+                    image: '',
+                  },
+                ]
+            ).map((st) => (
               <div
                 key={st.step}
-                className="bg-[#f9f9f9] rounded-2xl border border-[#e5e5e5] relative flex flex-col justify-between overflow-hidden shadow-xs hover:shadow-md transition-shadow p-6"
+                className="bg-[#f9f9f9] rounded-2xl border border-[#e5e5e5] relative flex flex-col justify-between overflow-hidden shadow-xs hover:shadow-md transition-shadow group"
               >
-                <div>
-                  <div className="w-10 h-10 rounded-xl bg-[#111111] text-white flex items-center justify-center font-extrabold text-xs mb-5">
-                    {st.step}
+                {st.image ? (
+                  <div className="relative h-36 w-full overflow-hidden bg-neutral-900 border-b border-[#e5e5e5]">
+                    <LazyImage
+                      src={st.image}
+                      alt={st.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      containerClassName="w-full h-full"
+                    />
+                    <div className="absolute top-3 left-3 z-10 w-8 h-8 rounded-lg bg-black/75 backdrop-blur-md text-white flex items-center justify-center font-extrabold text-xs">
+                      {st.step}
+                    </div>
                   </div>
-                  <h3 className="text-sm font-bold text-[#111111] mb-2">
-                    {st.title}
-                  </h3>
-                  <p className="text-xs text-[#5e5e5e] leading-relaxed">
-                    {st.desc}
-                  </p>
-                </div>
-                <div className="mt-5 pt-3 border-t border-[#e5e5e5] flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700">
-                  <CheckCircle className="w-3.5 h-3.5 shrink-0" />
-                  <span>Control de calidad garantizado</span>
+                ) : null}
+
+                <div className="p-6 flex-1 flex flex-col justify-between">
+                  <div>
+                    {!st.image && (
+                      <div className="w-10 h-10 rounded-xl bg-[#111111] text-white flex items-center justify-center font-extrabold text-xs mb-5">
+                        {st.step}
+                      </div>
+                    )}
+                    <h3 className="text-sm font-bold text-[#111111] mb-2">
+                      {st.title}
+                    </h3>
+                    <p className="text-xs text-[#5e5e5e] leading-relaxed">
+                      {st.desc}
+                    </p>
+                  </div>
+                  <div className="mt-5 pt-3 border-t border-[#e5e5e5] flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700">
+                    <CheckCircle className="w-3.5 h-3.5 shrink-0" />
+                    <span>Control de calidad garantizado</span>
+                  </div>
                 </div>
               </div>
             ))}
@@ -408,11 +433,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
       {/* 6. CONTANOS TU IDEA (INLINE CONTACT CARD WITH VISUAL ARCHITECTURAL BACKDROP) */}
       <section className="py-20 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-[#111111] text-white rounded-3xl shadow-2xl relative overflow-hidden grid grid-cols-1 lg:grid-cols-12">
-          {/* Visual column using client's own project photography */}
+          {/* Visual column using custom contact image or client's own project photography */}
           <div className="lg:col-span-5 relative min-h-[260px] lg:min-h-full overflow-hidden bg-[#1a1a1a]">
-            {(projects[1]?.heroImage || projects[0]?.heroImage) && (
+            {(settings?.contactCardImageUrl || projects[1]?.heroImage || projects[0]?.heroImage) && (
               <LazyImage
-                src={projects[1]?.heroImage || projects[0].heroImage}
+                src={settings?.contactCardImageUrl || projects[1]?.heroImage || projects[0].heroImage}
                 alt="Estudio de Arquitectura Romero"
                 className="w-full h-full object-cover"
                 containerClassName="w-full h-full"
@@ -423,10 +448,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 Atención Personalizada
               </span>
               <h3 className="text-xl font-bold text-white leading-tight">
-                Construimos proyectos que perduran en el tiempo.
+                {settings?.contactCardTitle || 'Construimos proyectos que perduran en el tiempo.'}
               </h3>
               <p className="text-xs text-neutral-300 mt-2">
-                Coordiná una reunión técnica diagnóstica con nuestros arquitectos directores.
+                {settings?.contactCardSubtitle || 'Coordiná una reunión técnica diagnóstica con nuestros arquitectos directores.'}
               </p>
             </div>
           </div>

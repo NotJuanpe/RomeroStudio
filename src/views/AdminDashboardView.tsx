@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Project, ContactMessage, ServiceItem, ProjectCategory, ProjectStatus, SiteSettings, SiteStats, ScreenView } from '../types';
-import { api } from '../api';
+import { Project, ContactMessage, ServiceItem, ProjectCategory, ProjectStatus, SiteSettings, SiteStats, ScreenView, ProcessStep } from '../types';
+import { api, DEFAULT_PROCESS_STEPS, DEFAULT_FOOTER_SPECIALTIES } from '../api';
 import {
   LayoutDashboard,
   FolderKanban,
@@ -234,8 +234,16 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
   // Selected service for content editing
   const [selectedServiceId, setSelectedServiceId] = useState<string>(services[0]?.id || '');
   const currentService = services.find((s) => s.id === selectedServiceId) || services[0];
+  const [serviceTitle, setServiceTitle] = useState('');
   const [serviceShortDesc, setServiceShortDesc] = useState('');
+  const [serviceFullDesc, setServiceFullDesc] = useState('');
   const [serviceTimeline, setServiceTimeline] = useState('');
+  const [serviceDeliverablesText, setServiceDeliverablesText] = useState('');
+  const [serviceImage, setServiceImage] = useState('');
+  const [isUploadingServiceImg, setIsUploadingServiceImg] = useState(false);
+  const [isUploadingHeroBg, setIsUploadingHeroBg] = useState(false);
+  const [isUploadingContactImg, setIsUploadingContactImg] = useState(false);
+  const [uploadingStepIdx, setUploadingStepIdx] = useState<number | null>(null);
 
   // Cloud Infrastructure state (Cloudflare Pages, Supabase, Resend)
   const [infraStatus, setInfraStatus] = useState<any>(null);
@@ -260,8 +268,12 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
 
   React.useEffect(() => {
     if (currentService) {
-      setServiceShortDesc(currentService.shortDesc);
-      setServiceTimeline(currentService.timeline);
+      setServiceTitle(currentService.title || '');
+      setServiceShortDesc(currentService.shortDesc || '');
+      setServiceFullDesc(currentService.fullDesc || '');
+      setServiceTimeline(currentService.timeline || '');
+      setServiceDeliverablesText((currentService.deliverables || []).join('\n'));
+      setServiceImage(currentService.image || '');
     }
   }, [selectedServiceId, services]);
 
@@ -317,12 +329,29 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
   const handleSaveService = (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentService) return;
+    const parsedDeliverables = serviceDeliverablesText
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean);
     onUpdateService(currentService.id, {
+      title: serviceTitle.trim() || currentService.title,
       shortDesc: serviceShortDesc,
+      fullDesc: serviceFullDesc,
       timeline: serviceTimeline,
+      deliverables: parsedDeliverables,
+      image: serviceImage.trim(),
     });
     setSettingsSaved(true);
     setTimeout(() => setSettingsSaved(false), 2500);
+  };
+
+  const updateProcessStep = (index: number, patch: Partial<ProcessStep>) => {
+    const baseSteps =
+      settingsForm.processSteps && settingsForm.processSteps.length > 0
+        ? settingsForm.processSteps
+        : DEFAULT_PROCESS_STEPS;
+    const nextSteps = baseSteps.map((s, idx) => (idx === index ? { ...s, ...patch } : s));
+    setSettingsForm((prev) => ({ ...prev, processSteps: nextSteps }));
   };
 
   const handlePasswordChange = async (e: React.FormEvent) => {
@@ -1093,6 +1122,56 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                   </div>
                 </div>
 
+                {/* Foto de fondo del Hero */}
+                <div className="pt-2 border-t border-[#f3f3f3] space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="block font-bold text-[#111111]">
+                      Foto de Fondo del Hero (opcional)
+                    </label>
+                    {settingsForm.heroImageUrl && (
+                      <button
+                        type="button"
+                        onClick={() => setSettingsForm({ ...settingsForm, heroImageUrl: '' })}
+                        className="text-[11px] font-bold text-red-600 hover:underline cursor-pointer"
+                      >
+                        Quitar (usar foto del primer proyecto)
+                      </button>
+                    )}
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <input
+                      type="text"
+                      value={settingsForm.heroImageUrl || ''}
+                      onChange={(e) => setSettingsForm({ ...settingsForm, heroImageUrl: e.target.value })}
+                      placeholder="Vacío = usa automáticamente la foto de tu primer proyecto"
+                      className="flex-1 p-2.5 bg-[#f9f9f9] border border-[#e5e5e5] rounded-xl text-xs text-[#111111] focus:border-[#111111] focus:outline-none"
+                    />
+                    <label className="cursor-pointer px-4 py-2.5 bg-neutral-900 hover:bg-black text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shrink-0">
+                      <UploadCloud className="w-4 h-4" />
+                      <span>{isUploadingHeroBg ? 'Subiendo...' : 'Subir Foto'}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        disabled={isUploadingHeroBg}
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            setIsUploadingHeroBg(true);
+                            try {
+                              const res = await api.uploadProjectImage(file, { folder: 'hero' });
+                              if (res.url) setSettingsForm((prev) => ({ ...prev, heroImageUrl: res.url || '' }));
+                            } finally {
+                              setIsUploadingHeroBg(false);
+                              e.target.value = '';
+                            }
+                          }
+                        }}
+                      />
+                    </label>
+                  </div>
+                </div>
+
                 <div className="flex items-center justify-between pt-2">
                   {settingsSaved ? (
                     <span className="text-emerald-600 font-bold flex items-center gap-1">
@@ -1140,9 +1219,34 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
 
               {currentService && (
                 <form onSubmit={handleSaveService} className="space-y-4 text-xs">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block font-bold text-[#111111] mb-1">
+                        Título del Servicio
+                      </label>
+                      <input
+                        type="text"
+                        value={serviceTitle}
+                        onChange={(e) => setServiceTitle(e.target.value)}
+                        className="w-full p-2.5 bg-[#f9f9f9] border border-[#e5e5e5] rounded-xl text-xs text-[#111111] focus:border-[#111111] focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-bold text-[#111111] mb-1">
+                        Plazo Estimado
+                      </label>
+                      <input
+                        type="text"
+                        value={serviceTimeline}
+                        onChange={(e) => setServiceTimeline(e.target.value)}
+                        className="w-full p-2.5 bg-[#f9f9f9] border border-[#e5e5e5] rounded-xl text-xs text-[#111111] focus:border-[#111111] focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
                   <div>
                     <label className="block font-bold text-[#111111] mb-1">
-                      Descripción Resumida
+                      Descripción Resumida (Inicio)
                     </label>
                     <textarea
                       rows={2}
@@ -1154,14 +1258,84 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
 
                   <div>
                     <label className="block font-bold text-[#111111] mb-1">
-                      Plazo Estimado
+                      Descripción Completa (Página Servicios)
                     </label>
-                    <input
-                      type="text"
-                      value={serviceTimeline}
-                      onChange={(e) => setServiceTimeline(e.target.value)}
+                    <textarea
+                      rows={3}
+                      value={serviceFullDesc}
+                      onChange={(e) => setServiceFullDesc(e.target.value)}
                       className="w-full p-2.5 bg-[#f9f9f9] border border-[#e5e5e5] rounded-xl text-xs text-[#111111] focus:border-[#111111] focus:outline-none"
                     />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-[#111111] mb-1">
+                      Entregables Principales (uno por línea)
+                    </label>
+                    <textarea
+                      rows={4}
+                      value={serviceDeliverablesText}
+                      onChange={(e) => setServiceDeliverablesText(e.target.value)}
+                      placeholder="Escribí un entregable por línea..."
+                      className="w-full p-2.5 bg-[#f9f9f9] border border-[#e5e5e5] rounded-xl text-xs text-[#111111] focus:border-[#111111] focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="p-3.5 bg-[#f9f9f9] border border-[#e5e5e5] rounded-xl space-y-2">
+                    <div className="flex items-center justify-between">
+                      <label className="block font-bold text-[#111111]">
+                        Foto del Servicio (opcional)
+                      </label>
+                      {serviceImage && (
+                        <button
+                          type="button"
+                          onClick={() => setServiceImage('')}
+                          className="text-[11px] font-bold text-red-600 hover:underline cursor-pointer"
+                        >
+                          Quitar foto
+                        </button>
+                      )}
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <input
+                        type="text"
+                        value={serviceImage}
+                        onChange={(e) => setServiceImage(e.target.value)}
+                        placeholder="Dejar vacío para tarjeta minimalista sin foto, o subir imagen..."
+                        className="flex-1 p-2.5 bg-white border border-[#e5e5e5] rounded-xl text-xs text-[#111111] focus:border-[#111111] focus:outline-none"
+                      />
+                      <label className="cursor-pointer px-4 py-2.5 bg-neutral-900 hover:bg-black text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shrink-0">
+                        <UploadCloud className="w-4 h-4" />
+                        <span>{isUploadingServiceImg ? 'Subiendo...' : 'Subir Foto'}</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          disabled={isUploadingServiceImg}
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setIsUploadingServiceImg(true);
+                              try {
+                                const res = await api.uploadProjectImage(file, { folder: 'services' });
+                                if (res.url) setServiceImage(res.url);
+                              } finally {
+                                setIsUploadingServiceImg(false);
+                                e.target.value = '';
+                              }
+                            }
+                          }}
+                        />
+                      </label>
+                    </div>
+                    {serviceImage && (
+                      <img
+                        src={serviceImage}
+                        alt="Vista previa servicio"
+                        className="h-28 w-48 object-cover rounded-lg border border-[#e5e5e5] mt-1"
+                        referrerPolicy="no-referrer"
+                      />
+                    )}
                   </div>
 
                   <div className="flex justify-end pt-2">
@@ -1175,6 +1349,269 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                   </div>
                 </form>
               )}
+            </div>
+
+            {/* 3. Proceso Constructivo (4 pasos) */}
+            <div className="bg-white p-6 sm:p-8 rounded-2xl border border-[#e5e5e5] shadow-xs space-y-5">
+              <div className="flex items-center justify-between pb-3 border-b border-[#f3f3f3]">
+                <h3 className="font-bold text-sm text-[#111111]">
+                  Flujo Constructivo ("Un Proceso Sin Estrés")
+                </h3>
+                <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#5e5e5e]">
+                  Sección 03
+                </span>
+              </div>
+
+              <form onSubmit={handleSaveSettings} className="space-y-4 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block font-bold text-[#111111] mb-1">
+                      Título de la Sección
+                    </label>
+                    <input
+                      type="text"
+                      value={settingsForm.processTitle || ''}
+                      onChange={(e) => setSettingsForm({ ...settingsForm, processTitle: e.target.value })}
+                      placeholder="Un Proceso Sin Estrés"
+                      className="w-full p-2.5 bg-[#f9f9f9] border border-[#e5e5e5] rounded-xl text-xs text-[#111111] focus:border-[#111111] focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-bold text-[#111111] mb-1">
+                      Subtítulo de la Sección
+                    </label>
+                    <input
+                      type="text"
+                      value={settingsForm.processSubtitle || ''}
+                      onChange={(e) => setSettingsForm({ ...settingsForm, processSubtitle: e.target.value })}
+                      className="w-full p-2.5 bg-[#f9f9f9] border border-[#e5e5e5] rounded-xl text-xs text-[#111111] focus:border-[#111111] focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {(settingsForm.processSteps && settingsForm.processSteps.length > 0
+                    ? settingsForm.processSteps
+                    : DEFAULT_PROCESS_STEPS
+                  ).map((st, idx) => (
+                    <div key={st.step} className="p-4 bg-[#f9f9f9] border border-[#e5e5e5] rounded-xl space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#111111]">
+                          Paso {st.step}
+                        </span>
+                        {st.image && (
+                          <button
+                            type="button"
+                            onClick={() => updateProcessStep(idx, { image: '' })}
+                            className="text-[10px] font-bold text-red-600 hover:underline cursor-pointer"
+                          >
+                            Quitar foto
+                          </button>
+                        )}
+                      </div>
+                      <input
+                        type="text"
+                        value={st.title}
+                        onChange={(e) => updateProcessStep(idx, { title: e.target.value })}
+                        className="w-full p-2 bg-white border border-[#e5e5e5] rounded-lg text-xs font-bold text-[#111111] focus:border-[#111111] focus:outline-none"
+                      />
+                      <textarea
+                        rows={2}
+                        value={st.desc}
+                        onChange={(e) => updateProcessStep(idx, { desc: e.target.value })}
+                        className="w-full p-2 bg-white border border-[#e5e5e5] rounded-lg text-xs text-[#5e5e5e] focus:border-[#111111] focus:outline-none"
+                      />
+                      <div className="flex items-center gap-2">
+                        <label className="cursor-pointer px-3 py-1.5 bg-white hover:bg-neutral-100 text-[#111111] border border-[#e5e5e5] rounded-lg text-[11px] font-bold flex items-center gap-1.5">
+                          <UploadCloud className="w-3.5 h-3.5" />
+                          <span>{uploadingStepIdx === idx ? 'Subiendo...' : st.image ? 'Cambiar Foto' : 'Subir Foto (opcional)'}</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            disabled={uploadingStepIdx === idx}
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                setUploadingStepIdx(idx);
+                                try {
+                                  const res = await api.uploadProjectImage(file, { folder: 'process' });
+                                  if (res.url) updateProcessStep(idx, { image: res.url });
+                                } finally {
+                                  setUploadingStepIdx(null);
+                                  e.target.value = '';
+                                }
+                              }
+                            }}
+                          />
+                        </label>
+                        {st.image && (
+                          <img
+                            src={st.image}
+                            alt={st.title}
+                            className="h-8 w-12 object-cover rounded border border-[#e5e5e5]"
+                            referrerPolicy="no-referrer"
+                          />
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex justify-end pt-2">
+                  <button
+                    type="submit"
+                    className="px-5 py-2.5 bg-[#111111] hover:bg-black text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-xs cursor-pointer flex items-center gap-2 active:scale-95"
+                  >
+                    <Save className="w-3.5 h-3.5" />
+                    <span>Guardar Flujo Constructivo</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            {/* 4. Tarjeta de Contacto & Pie de Página (Footer) */}
+            <div className="bg-white p-6 sm:p-8 rounded-2xl border border-[#e5e5e5] shadow-xs space-y-5">
+              <div className="flex items-center justify-between pb-3 border-b border-[#f3f3f3]">
+                <h3 className="font-bold text-sm text-[#111111]">
+                  Tarjeta de Contacto & Pie de Página (Footer)
+                </h3>
+                <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#5e5e5e]">
+                  Sección 04
+                </span>
+              </div>
+
+              <form onSubmit={handleSaveSettings} className="space-y-4 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block font-bold text-[#111111] mb-1">
+                      Título Tarjeta "Contanos tu idea"
+                    </label>
+                    <input
+                      type="text"
+                      value={settingsForm.contactCardTitle || ''}
+                      onChange={(e) => setSettingsForm({ ...settingsForm, contactCardTitle: e.target.value })}
+                      className="w-full p-2.5 bg-[#f9f9f9] border border-[#e5e5e5] rounded-xl text-xs text-[#111111] focus:border-[#111111] focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-bold text-[#111111] mb-1">
+                      Subtítulo Tarjeta de Contacto
+                    </label>
+                    <input
+                      type="text"
+                      value={settingsForm.contactCardSubtitle || ''}
+                      onChange={(e) => setSettingsForm({ ...settingsForm, contactCardSubtitle: e.target.value })}
+                      className="w-full p-2.5 bg-[#f9f9f9] border border-[#e5e5e5] rounded-xl text-xs text-[#111111] focus:border-[#111111] focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="block font-bold text-[#111111]">
+                      Foto Tarjeta de Contacto (opcional)
+                    </label>
+                    {settingsForm.contactCardImageUrl && (
+                      <button
+                        type="button"
+                        onClick={() => setSettingsForm({ ...settingsForm, contactCardImageUrl: '' })}
+                        className="text-[11px] font-bold text-red-600 hover:underline cursor-pointer"
+                      >
+                        Quitar (usar foto de proyecto)
+                      </button>
+                    )}
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <input
+                      type="text"
+                      value={settingsForm.contactCardImageUrl || ''}
+                      onChange={(e) => setSettingsForm({ ...settingsForm, contactCardImageUrl: e.target.value })}
+                      placeholder="Vacío = usa foto de tus proyectos"
+                      className="flex-1 p-2.5 bg-[#f9f9f9] border border-[#e5e5e5] rounded-xl text-xs text-[#111111] focus:border-[#111111] focus:outline-none"
+                    />
+                    <label className="cursor-pointer px-4 py-2.5 bg-neutral-900 hover:bg-black text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shrink-0">
+                      <UploadCloud className="w-4 h-4" />
+                      <span>{isUploadingContactImg ? 'Subiendo...' : 'Subir Foto'}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        disabled={isUploadingContactImg}
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            setIsUploadingContactImg(true);
+                            try {
+                              const res = await api.uploadProjectImage(file, { folder: 'contact' });
+                              if (res.url) setSettingsForm((prev) => ({ ...prev, contactCardImageUrl: res.url || '' }));
+                            } finally {
+                              setIsUploadingContactImg(false);
+                              e.target.value = '';
+                            }
+                          }
+                        }}
+                      />
+                    </label>
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t border-[#f3f3f3] space-y-4">
+                  <div>
+                    <label className="block font-bold text-[#111111] mb-1">
+                      Título CTA del Pie de Página (Footer)
+                    </label>
+                    <input
+                      type="text"
+                      value={settingsForm.footerCtaTitle || ''}
+                      onChange={(e) => setSettingsForm({ ...settingsForm, footerCtaTitle: e.target.value })}
+                      className="w-full p-2.5 bg-[#f9f9f9] border border-[#e5e5e5] rounded-xl text-xs text-[#111111] focus:border-[#111111] focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-[#111111] mb-1">
+                      Descripción Institucional del Footer
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={settingsForm.footerDescription || ''}
+                      onChange={(e) => setSettingsForm({ ...settingsForm, footerDescription: e.target.value })}
+                      className="w-full p-2.5 bg-[#f9f9f9] border border-[#e5e5e5] rounded-xl text-xs text-[#111111] focus:border-[#111111] focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-[#111111] mb-1">
+                      Especialidades del Footer (una por línea)
+                    </label>
+                    <textarea
+                      rows={4}
+                      value={(settingsForm.footerSpecialties && settingsForm.footerSpecialties.length > 0
+                        ? settingsForm.footerSpecialties
+                        : DEFAULT_FOOTER_SPECIALTIES
+                      ).join('\n')}
+                      onChange={(e) =>
+                        setSettingsForm({
+                          ...settingsForm,
+                          footerSpecialties: e.target.value.split('\n'),
+                        })
+                      }
+                      className="w-full p-2.5 bg-[#f9f9f9] border border-[#e5e5e5] rounded-xl text-xs text-[#111111] focus:border-[#111111] focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end pt-2">
+                  <button
+                    type="submit"
+                    className="px-5 py-2.5 bg-[#111111] hover:bg-black text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-xs cursor-pointer flex items-center gap-2 active:scale-95"
+                  >
+                    <Save className="w-3.5 h-3.5" />
+                    <span>Guardar Contacto y Footer</span>
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}

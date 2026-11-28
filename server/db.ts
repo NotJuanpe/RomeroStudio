@@ -1,37 +1,7 @@
 import fs from 'fs';
 import path from 'path';
-import { Project, ServiceItem, ContactMessage } from '../src/types';
+import { Project, ServiceItem, ContactMessage, SiteSettings, SiteStats } from '../src/types';
 import { INITIAL_PROJECTS, INITIAL_SERVICES, INITIAL_MESSAGES } from '../src/mockData';
-
-export interface SiteSettings {
-  studioName: string;
-  tagline: string;
-  email: string;
-  phone: string;
-  address: string;
-  heroTitle: string;
-  heroSubtitle: string;
-  whatsappNumber: string;
-  instagramUrl?: string;
-  linkedinUrl?: string;
-  logoUrl?: string;
-  logoInvertOnDark?: boolean;
-  heroStat1Value?: string;
-  heroStat1Label?: string;
-  heroStat2Value?: string;
-  heroStat2Label?: string;
-  heroStat3Value?: string;
-  heroStat3Label?: string;
-}
-
-export interface SiteStats {
-  activeProjects: number;
-  totalProjects: number;
-  totalMessages: number;
-  unreadMessages: number;
-  visits: number;
-  lastUpdated: string;
-}
 
 interface DatabaseSchema {
   projects: Project[];

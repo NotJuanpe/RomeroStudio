@@ -33,7 +33,7 @@ export const Footer: React.FC<FooterProps> = ({
               Dirección & Proyecto
             </span>
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
-              ¿Listo para dar forma a tu próximo espacio?
+              {settings.footerCtaTitle?.trim() || '¿Listo para dar forma a tu próximo espacio?'}
             </h2>
           </div>
           <button
@@ -57,7 +57,8 @@ export const Footer: React.FC<FooterProps> = ({
               onClick={() => onNavigate('inicio')}
             />
             <p className="text-xs text-neutral-400 leading-relaxed max-w-xs">
-              Estudio de arquitectura técnica especializado en obra nueva, reformas integrales y dirección técnica rigurosa.
+              {settings.footerDescription?.trim() ||
+                'Estudio de arquitectura técnica especializado en obra nueva, reformas integrales y dirección técnica rigurosa.'}
             </p>
             <div className="flex items-center gap-3 pt-2">
               {instagramUrl && (
@@ -143,38 +144,32 @@ export const Footer: React.FC<FooterProps> = ({
               Especialidades
             </h4>
             <ul className="space-y-2.5 text-xs text-neutral-300">
-              <li>
-                <button
-                  onClick={() => onNavigate('proyectos')}
-                  className="hover:text-white transition-colors cursor-pointer text-left"
-                >
-                  Obras Nuevas Residenciales
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => onNavigate('proyectos')}
-                  className="hover:text-white transition-colors cursor-pointer text-left"
-                >
-                  Reformas Integrales
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => onNavigate('antes-despues')}
-                  className="hover:text-white transition-colors cursor-pointer text-left"
-                >
-                  Comparativas Antes y Después
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => onNavigate('servicios')}
-                  className="hover:text-white transition-colors cursor-pointer text-left"
-                >
-                  Dirección Técnica & Project Management
-                </button>
-              </li>
+              {(settings.footerSpecialties && settings.footerSpecialties.length > 0
+                ? settings.footerSpecialties
+                : [
+                    'Obras Nuevas Residenciales',
+                    'Reformas Integrales',
+                    'Comparativas Antes y Después',
+                    'Dirección Técnica & Project Management',
+                  ]
+              ).map((spec, idx) => {
+                const targetView: ScreenView =
+                  spec.toLowerCase().includes('antes')
+                    ? 'antes-despues'
+                    : spec.toLowerCase().includes('dirección') || spec.toLowerCase().includes('gestión')
+                    ? 'servicios'
+                    : 'proyectos';
+                return (
+                  <li key={idx}>
+                    <button
+                      onClick={() => onNavigate(targetView)}
+                      className="hover:text-white transition-colors cursor-pointer text-left"
+                    >
+                      {spec}
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
           </div>
 

@@ -2,6 +2,40 @@ import { Project, ContactMessage, ServiceItem, SiteSettings, SiteStats } from '.
 import { INITIAL_PROJECTS, INITIAL_SERVICES, INITIAL_MESSAGES } from './mockData';
 import { getSupabase, isSupabaseConfigured, uploadProjectImageToSupabase } from './lib/supabase';
 
+export const DEFAULT_PROCESS_STEPS = [
+  {
+    step: '01',
+    title: 'Diagnóstico & Relevamiento',
+    desc: 'Estudio de normativa, mediciones in situ y definición del programa de necesidades con el cliente.',
+    image: '',
+  },
+  {
+    step: '02',
+    title: 'Anteproyecto & Presupuesto',
+    desc: 'Modelado 3D, definición exhaustiva de materiales y presupuesto cerrado sin costes ocultos.',
+    image: '',
+  },
+  {
+    step: '03',
+    title: 'Ejecución & Dirección',
+    desc: 'Supervisión técnica continua en obra, gestión de gremios y reportes semanales fotográficos.',
+    image: '',
+  },
+  {
+    step: '04',
+    title: 'Entrega Llave en Mano',
+    desc: 'Revisión minuciosa de terminaciones, entrega de llaves y documentación técnica para su uso.',
+    image: '',
+  },
+];
+
+export const DEFAULT_FOOTER_SPECIALTIES = [
+  'Obras Nuevas Residenciales',
+  'Reformas Integrales',
+  'Comparativas Antes y Después',
+  'Dirección Técnica & Project Management',
+];
+
 export const DEFAULT_SETTINGS: SiteSettings = {
   studioName: 'Romero Estudio - Arquitectura Integral',
   tagline: 'Arquitectura Integral & Gestión de Proyectos',
@@ -11,6 +45,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   heroTitle: 'Arquitectura Integral.',
   heroSubtitle:
     'Diseñamos y materializamos espacios singulares aunando rigor técnico, nobleza en los materiales y un control riguroso de cada etapa de obra.',
+  heroImageUrl: '',
   whatsappNumber: '5491136767925',
   instagramUrl: 'https://www.instagram.com/romeroestudio.arq/',
   linkedinUrl: '',
@@ -22,6 +57,15 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   heroStat2Label: 'Obras Ejecutadas',
   heroStat3Value: '100%',
   heroStat3Label: 'Compromiso de Plazos',
+  processTitle: 'Un Proceso Sin Estrés',
+  processSubtitle: 'Transformamos la complejidad de una obra en un cronograma claro, transparente y predecible.',
+  processSteps: DEFAULT_PROCESS_STEPS,
+  contactCardTitle: 'Construimos proyectos que perduran en el tiempo.',
+  contactCardSubtitle: 'Coordiná una reunión técnica diagnóstica con nuestros arquitectos directores.',
+  contactCardImageUrl: '',
+  footerCtaTitle: '¿Listo para dar forma a tu próximo espacio?',
+  footerDescription: 'Estudio de arquitectura técnica especializado en obra nueva, reformas integrales y dirección técnica rigurosa.',
+  footerSpecialties: DEFAULT_FOOTER_SPECIALTIES,
 };
 
 export type PersistenceTarget = 'supabase' | 'server' | 'local';
@@ -203,6 +247,7 @@ function mapSupabaseSettings(row: any): SiteSettings {
     address: row.office_address || DEFAULT_SETTINGS.address,
     heroTitle: social.heroTitle || DEFAULT_SETTINGS.heroTitle,
     heroSubtitle: social.heroSubtitle || row.description || DEFAULT_SETTINGS.heroSubtitle,
+    heroImageUrl: social.heroImageUrl ?? DEFAULT_SETTINGS.heroImageUrl,
     whatsappNumber: social.whatsapp || DEFAULT_SETTINGS.whatsappNumber,
     instagramUrl: social.instagram ?? DEFAULT_SETTINGS.instagramUrl,
     linkedinUrl: social.linkedin ?? DEFAULT_SETTINGS.linkedinUrl,
@@ -214,6 +259,21 @@ function mapSupabaseSettings(row: any): SiteSettings {
     heroStat2Label: social.heroStat2Label || DEFAULT_SETTINGS.heroStat2Label,
     heroStat3Value: social.heroStat3Value || DEFAULT_SETTINGS.heroStat3Value,
     heroStat3Label: social.heroStat3Label || DEFAULT_SETTINGS.heroStat3Label,
+    processTitle: social.processTitle || DEFAULT_SETTINGS.processTitle,
+    processSubtitle: social.processSubtitle || DEFAULT_SETTINGS.processSubtitle,
+    processSteps:
+      Array.isArray(social.processSteps) && social.processSteps.length > 0
+        ? social.processSteps
+        : DEFAULT_PROCESS_STEPS,
+    contactCardTitle: social.contactCardTitle || DEFAULT_SETTINGS.contactCardTitle,
+    contactCardSubtitle: social.contactCardSubtitle || DEFAULT_SETTINGS.contactCardSubtitle,
+    contactCardImageUrl: social.contactCardImageUrl ?? DEFAULT_SETTINGS.contactCardImageUrl,
+    footerCtaTitle: social.footerCtaTitle || DEFAULT_SETTINGS.footerCtaTitle,
+    footerDescription: social.footerDescription || DEFAULT_SETTINGS.footerDescription,
+    footerSpecialties:
+      Array.isArray(social.footerSpecialties) && social.footerSpecialties.length > 0
+        ? social.footerSpecialties
+        : DEFAULT_FOOTER_SPECIALTIES,
   };
 }
 
@@ -648,13 +708,13 @@ export const api = {
                 id: s.id,
                 title: s.title || fallback?.title || 'Servicio',
                 shortDesc: s.description || fallback?.shortDesc || '',
-                fullDesc: fallback?.fullDesc || s.description || '',
+                fullDesc: s.phases?.[1] || fallback?.fullDesc || s.description || '',
                 icon: fallback?.icon || 'architecture',
                 deliverables: Array.isArray(s.deliverables) && s.deliverables.length > 0
                   ? s.deliverables
                   : fallback?.deliverables || [],
                 timeline: s.phases?.[0] || fallback?.timeline || '',
-                image: fallback?.image,
+                image: s.phases?.[2] || '',
               };
             });
             writeLocal(STORAGE_KEYS.services, mapped);
@@ -703,7 +763,11 @@ export const api = {
             category: 'Arquitectura',
             description: merged.shortDesc,
             deliverables: merged.deliverables || [],
-            phases: merged.timeline ? [merged.timeline] : [],
+            phases: [
+              merged.timeline || '',
+              merged.fullDesc || '',
+              merged.image || '',
+            ],
           });
           if (!error) return { data: merged, persistedTo: 'supabase' };
         } catch (err) {
@@ -784,6 +848,7 @@ export const api = {
               whatsapp: merged.whatsappNumber || '',
               heroTitle: merged.heroTitle || '',
               heroSubtitle: merged.heroSubtitle || '',
+              heroImageUrl: merged.heroImageUrl || '',
               logoUrl: merged.logoUrl || '',
               logoInvertOnDark: merged.logoInvertOnDark ?? true,
               heroStat1Value: merged.heroStat1Value || DEFAULT_SETTINGS.heroStat1Value,
@@ -792,6 +857,17 @@ export const api = {
               heroStat2Label: merged.heroStat2Label || DEFAULT_SETTINGS.heroStat2Label,
               heroStat3Value: merged.heroStat3Value || DEFAULT_SETTINGS.heroStat3Value,
               heroStat3Label: merged.heroStat3Label || DEFAULT_SETTINGS.heroStat3Label,
+              processTitle: merged.processTitle || DEFAULT_SETTINGS.processTitle,
+              processSubtitle: merged.processSubtitle || DEFAULT_SETTINGS.processSubtitle,
+              processSteps: merged.processSteps || DEFAULT_PROCESS_STEPS,
+              contactCardTitle: merged.contactCardTitle || DEFAULT_SETTINGS.contactCardTitle,
+              contactCardSubtitle: merged.contactCardSubtitle || DEFAULT_SETTINGS.contactCardSubtitle,
+              contactCardImageUrl: merged.contactCardImageUrl || '',
+              footerCtaTitle: merged.footerCtaTitle || DEFAULT_SETTINGS.footerCtaTitle,
+              footerDescription: merged.footerDescription || DEFAULT_SETTINGS.footerDescription,
+              footerSpecialties: (merged.footerSpecialties || DEFAULT_FOOTER_SPECIALTIES)
+                .map((s) => s.trim())
+                .filter(Boolean),
             },
             updated_at: new Date().toISOString(),
           });
