@@ -102,7 +102,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
   const [newArea, setNewArea] = useState('320 m²');
   const [newScope, setNewScope] = useState('Obra Nueva');
   const [newMaterials, setNewMaterials] = useState('Hormigón Visto, Vidrio Doble, Acero');
-  const [newImage, setNewImage] = useState('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80');
+  const [newImage, setNewImage] = useState('');
   const [newGallery, setNewGallery] = useState<string[]>([]);
   const [newGalleryUrlInput, setNewGalleryUrlInput] = useState('');
   const [editGalleryUrlInput, setEditGalleryUrlInput] = useState('');

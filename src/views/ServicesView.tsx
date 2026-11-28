@@ -25,31 +25,26 @@ export const ServicesView: React.FC<ServicesViewProps> = ({ services, onOpenCont
       num: '01',
       title: 'Diagnóstico & Programa',
       desc: 'Análisis urbanístico, compatibilidad normativa municipal, estudio geotécnico preliminar y definición del programa de necesidades.',
-      image: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=600&q=80',
     },
     {
       num: '02',
       title: 'Anteproyecto & BIM 3D',
       desc: 'Diseño arquitectónico, modelado BIM 3D, cálculos estructurales, instalaciones de eficiencia energética y memoria de calidades.',
-      image: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=600&q=80',
     },
     {
       num: '03',
       title: 'Licitación & Contrato',
       desc: 'Comparativo pormenorizado de proveedores y subcontratistas. Fijación de costes unitarios y contrato de presupuesto cerrado.',
-      image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=600&q=80',
     },
     {
       num: '04',
       title: 'Dirección de Obra',
       desc: 'Presencia semanal de arquitectos directores en tajo, verificación de ensayos de materiales y emisión de certificaciones.',
-      image: 'https://images.unsplash.com/photo-1541888946425-d0fbb186c5f7?auto=format&fit=crop&w=600&q=80',
     },
     {
       num: '05',
       title: 'Recepción & Garantías',
       desc: 'Inspección de terminaciones, tramitación de final de obra, entrega del Libro del Edificio y garantía post-construcción.',
-      image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=600&q=80',
     },
   ];
 
@@ -185,29 +180,18 @@ export const ServicesView: React.FC<ServicesViewProps> = ({ services, onOpenCont
             {phases.map((ph) => (
               <div
                 key={ph.num}
-                className="bg-white rounded-2xl border border-[#e5e5e5] overflow-hidden flex flex-col justify-between shadow-xs hover:shadow-md transition-shadow group"
+                className="bg-white rounded-2xl border border-[#e5e5e5] overflow-hidden flex flex-col justify-between shadow-xs hover:shadow-md transition-shadow p-5"
               >
-                <div className="relative h-32 w-full overflow-hidden bg-neutral-900 border-b border-[#e5e5e5]">
-                  <LazyImage
-                    src={ph.image}
-                    alt={ph.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    containerClassName="w-full h-full"
-                  />
-                  <div className="absolute top-2.5 left-2.5 z-10 w-7 h-7 rounded-lg bg-black/75 backdrop-blur-md text-white flex items-center justify-center font-extrabold text-xs">
+                <div>
+                  <div className="w-9 h-9 rounded-xl bg-[#111111] text-white flex items-center justify-center font-extrabold text-xs mb-4">
                     {ph.num}
                   </div>
-                </div>
-
-                <div className="p-5 flex-1 flex flex-col justify-between">
-                  <div>
-                    <h3 className="text-sm font-bold text-[#111111] mb-2 leading-snug">
-                      {ph.title}
-                    </h3>
-                    <p className="text-xs text-[#5e5e5e] leading-relaxed">
-                      {ph.desc}
-                    </p>
-                  </div>
+                  <h3 className="text-sm font-bold text-[#111111] mb-2 leading-snug">
+                    {ph.title}
+                  </h3>
+                  <p className="text-xs text-[#5e5e5e] leading-relaxed">
+                    {ph.desc}
+                  </p>
                 </div>
               </div>
             ))}

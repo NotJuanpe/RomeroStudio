@@ -130,7 +130,7 @@ function mapSupabaseProject(item: any): Project {
   const heroImage =
     images[0] ||
     details.heroImage ||
-    'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80';
+    '';
   const gallery =
     Array.isArray(details.gallery) && details.gallery.length > 0
       ? details.gallery
@@ -365,9 +365,7 @@ export const api = {
       area: project.area || '250 m²',
       scope: project.scope || 'Obra Nueva',
       materials: project.materials || 'Hormigón Visto, Acero, Vidrio',
-      heroImage:
-        project.heroImage ||
-        'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
+      heroImage: project.heroImage || '',
       detailImage: project.detailImage,
       beforeImage: project.beforeImage,
       afterImage: project.afterImage,

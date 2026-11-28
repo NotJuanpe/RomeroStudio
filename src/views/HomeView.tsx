@@ -72,13 +72,15 @@ export const HomeView: React.FC<HomeViewProps> = ({
         id="hero-section"
         className="relative min-h-[90vh] lg:min-h-screen flex items-center justify-center bg-[#111111] text-white overflow-hidden pt-24 pb-16"
       >
-        {/* Background photo with high fidelity architectural villa */}
-        <img
-          src="https://lh3.googleusercontent.com/aida-public/AB6AXuCGg8GnC8XletxD8rXxutbF6VqTsDhgY1KHKMSEAhr4iojfxi6ohMQbR2sqWMY3d4SdSM7jZvBBNyLoHRchaIPQaTmzsPVyC9fjwBfdsEZ3SHI8unQPiEcICokB8l9rsfLifHX_g-kDWrUQLCHPHPm-z9_oVMCz9VEZ7AFYh0wFMkPaPmLeA9iaJ7OMvhy3aR2NgvUDOlrlklhWXZLB_H8WHsVDYNI5Ko7ifnuIryiVZ0tXYxa8Wzb6CA"
-          alt="Romero Estudio Arquitectura Hero"
-          className="absolute inset-0 w-full h-full object-cover object-center opacity-45 scale-105 transition-transform duration-1000 ease-out"
-          referrerPolicy="no-referrer"
-        />
+        {/* Background photo from client's own uploaded projects (no stock fallback) */}
+        {projects[0]?.heroImage && (
+          <img
+            src={projects[0].heroImage}
+            alt={projects[0].title || 'Romero Estudio Arquitectura'}
+            className="absolute inset-0 w-full h-full object-cover object-center opacity-40 scale-105 transition-transform duration-1000 ease-out"
+            referrerPolicy="no-referrer"
+          />
+        )}
 
         {/* Sophisticated gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-[#111111] via-[#111111]/40 to-[#111111]/70"></div>
@@ -240,7 +242,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 afterImage={beforeAfterProject.afterImage || beforeAfterProject.heroImage}
                 title={beforeAfterProject.title}
                 subtitle="Arrastrá el separador para contrastar la pre-intervención con la obra terminada"
-                heightClass="h-[380px] sm:h-[500px]"
+                heightClass="max-h-[500px]"
               />
 
               <div className="mt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-4 border-t border-[#e5e5e5]">
@@ -361,56 +363,41 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 step: '01',
                 title: 'Diagnóstico & Relevamiento',
                 desc: 'Estudio de normativa, mediciones in situ y definición del programa de necesidades con el cliente.',
-                image: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=600&q=80',
               },
               {
                 step: '02',
                 title: 'Anteproyecto & Presupuesto',
                 desc: 'Modelado 3D, definición exhaustiva de materiales y presupuesto cerrado sin costes ocultos.',
-                image: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=600&q=80',
               },
               {
                 step: '03',
                 title: 'Ejecución & Dirección',
                 desc: 'Supervisión técnica continua en obra, gestión de gremios y reportes semanales fotográficos.',
-                image: 'https://images.unsplash.com/photo-1541888946425-d0fbb186c5f7?auto=format&fit=crop&w=600&q=80',
               },
               {
                 step: '04',
                 title: 'Entrega Llave en Mano',
                 desc: 'Revisión minuciosa de terminaciones, entrega de llaves y documentación técnica para su uso.',
-                image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=600&q=80',
               },
             ].map((st) => (
               <div
                 key={st.step}
-                className="bg-[#f9f9f9] rounded-2xl border border-[#e5e5e5] relative flex flex-col justify-between overflow-hidden shadow-xs hover:shadow-md transition-shadow group"
+                className="bg-[#f9f9f9] rounded-2xl border border-[#e5e5e5] relative flex flex-col justify-between overflow-hidden shadow-xs hover:shadow-md transition-shadow p-6"
               >
-                <div className="relative h-36 w-full overflow-hidden bg-neutral-900 border-b border-[#e5e5e5]">
-                  <LazyImage
-                    src={st.image}
-                    alt={st.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    containerClassName="w-full h-full"
-                  />
-                  <div className="absolute top-3 left-3 z-10 w-8 h-8 rounded-lg bg-black/75 backdrop-blur-md text-white flex items-center justify-center font-extrabold text-xs">
+                <div>
+                  <div className="w-10 h-10 rounded-xl bg-[#111111] text-white flex items-center justify-center font-extrabold text-xs mb-5">
                     {st.step}
                   </div>
+                  <h3 className="text-sm font-bold text-[#111111] mb-2">
+                    {st.title}
+                  </h3>
+                  <p className="text-xs text-[#5e5e5e] leading-relaxed">
+                    {st.desc}
+                  </p>
                 </div>
-
-                <div className="p-5 flex-1 flex flex-col justify-between">
-                  <div>
-                    <h3 className="text-sm font-bold text-[#111111] mb-1.5">
-                      {st.title}
-                    </h3>
-                    <p className="text-xs text-[#5e5e5e] leading-relaxed">
-                      {st.desc}
-                    </p>
-                  </div>
-                  <div className="mt-4 pt-3 border-t border-[#e5e5e5] flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700">
-                    <CheckCircle className="w-3.5 h-3.5 shrink-0" />
-                    <span>Control de calidad garantizado</span>
-                  </div>
+                <div className="mt-5 pt-3 border-t border-[#e5e5e5] flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700">
+                  <CheckCircle className="w-3.5 h-3.5 shrink-0" />
+                  <span>Control de calidad garantizado</span>
                 </div>
               </div>
             ))}
@@ -421,14 +408,16 @@ export const HomeView: React.FC<HomeViewProps> = ({
       {/* 6. CONTANOS TU IDEA (INLINE CONTACT CARD WITH VISUAL ARCHITECTURAL BACKDROP) */}
       <section className="py-20 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-[#111111] text-white rounded-3xl shadow-2xl relative overflow-hidden grid grid-cols-1 lg:grid-cols-12">
-          {/* Visual column with architectural imagery */}
-          <div className="lg:col-span-5 relative min-h-[260px] lg:min-h-full overflow-hidden">
-            <LazyImage
-              src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1000&q=80"
-              alt="Estudio de Arquitectura Romero"
-              className="w-full h-full object-cover"
-              containerClassName="w-full h-full"
-            />
+          {/* Visual column using client's own project photography */}
+          <div className="lg:col-span-5 relative min-h-[260px] lg:min-h-full overflow-hidden bg-[#1a1a1a]">
+            {(projects[1]?.heroImage || projects[0]?.heroImage) && (
+              <LazyImage
+                src={projects[1]?.heroImage || projects[0].heroImage}
+                alt="Estudio de Arquitectura Romero"
+                className="w-full h-full object-cover"
+                containerClassName="w-full h-full"
+              />
+            )}
             <div className="absolute inset-0 bg-gradient-to-t lg:bg-gradient-to-r from-black/80 via-black/40 to-transparent flex flex-col justify-end p-8">
               <span className="text-[10px] font-extrabold uppercase tracking-widest text-neutral-300 mb-1">
                 Atención Personalizada
